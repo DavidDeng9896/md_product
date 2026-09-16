@@ -1,0 +1,3 @@
+_shot_modal_object.png OK
+_shot_modal_material.png OK
+_shot_modal_list.png OK
