@@ -46,11 +46,39 @@
       margin-bottom: 8px;
     }
     .field-map-title {
-      height: 32px;
+      height: 22px;
       display: flex;
       align-items: center;
       font-size: 14px;
+      font-weight: 500;
       color: rgba(0,0,0,.88);
+    }
+    .select-plain {
+      height: 22px;
+      width: 100%;
+      max-width: 100%;
+      border: none;
+      border-radius: 0;
+      background: transparent;
+      padding: 0 18px 0 0;
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 22px;
+      color: rgba(0,0,0,.88);
+      box-shadow: none;
+      -webkit-appearance: none;
+      appearance: none;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='%238c8c8c' d='M0 0l5 6 5-6z'/></svg>");
+      background-repeat: no-repeat;
+      background-position: right 0 center;
+      cursor: pointer;
+    }
+    .select-plain:hover,
+    .select-plain:focus {
+      border: none;
+      outline: none;
+      box-shadow: none;
+      color: #1677ff;
     }
     .map-table {
       width: 100%;
@@ -70,11 +98,16 @@
       border-bottom: 1px solid #f0f0f0;
     }
     .map-table td:last-child { color: rgba(0,0,0,.45); }
-    .map-table thead th {
-      padding: 8px 12px;
-      vertical-align: middle;
+    .map-table thead tr:first-child th {
+      padding: 8px 16px 4px;
+      border-bottom: none;
     }
-    .map-table thead .ant-ctrl { background: #fff; }
+    .map-table thead tr:last-child th {
+      padding: 4px 16px 10px;
+      color: rgba(0,0,0,.45);
+      font-weight: 400;
+      font-size: 13px;
+    }
     .map-table td.source-cell { padding: 8px 12px; }
     .map-table tr.is-skip td { color: rgba(0,0,0,.25); }
     .map-split {
@@ -317,19 +350,33 @@
 
         <div class="map-split mt-4">
           <div class="map-pane">
-            <select id="sourceSelect" class="ant-ctrl focus-ring mb-2" title="选择源对象或物料类型" aria-label="源侧"></select>
             <table id="leftMapTable" class="map-table">
               <thead>
-                <tr><th>名称</th><th>字段类型</th></tr>
+                <tr>
+                  <th colspan="2">
+                    <select id="sourceSelect" class="select-plain" title="选择源对象或物料类型" aria-label="源侧"></select>
+                  </th>
+                </tr>
+                <tr>
+                  <th>名称</th>
+                  <th>字段类型</th>
+                </tr>
               </thead>
               <tbody id="leftMapBody"></tbody>
             </table>
           </div>
           <div class="map-pane">
-            <div class="field-map-title whitespace-nowrap overflow-hidden text-ellipsis mb-2" id="rightPaneTitle">注册库 (当前对象模型)</div>
             <table id="rightMapTable" class="map-table">
               <thead>
-                <tr><th>名称</th><th>字段类型</th></tr>
+                <tr>
+                  <th colspan="2">
+                    <div class="field-map-title whitespace-nowrap overflow-hidden text-ellipsis" id="rightPaneTitle">注册库 (当前对象模型)</div>
+                  </th>
+                </tr>
+                <tr>
+                  <th>名称</th>
+                  <th>字段类型</th>
+                </tr>
               </thead>
               <tbody id="rightMapBody"></tbody>
             </table>
