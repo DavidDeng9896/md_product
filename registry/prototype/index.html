@@ -68,7 +68,8 @@
       color: rgba(0,0,0,.88);
       cursor: pointer;
     }
-    .select-plain .ri-arrow-down-s-line { font-size: 16px; color: #8c8c8c; }
+    .select-plain.hidden,
+    .field-map-title.hidden { display: none !important; }
     .select-plain:hover,
     .select-plain.dd-open { color: #1677ff; }
     .select-plain:hover .ri-arrow-down-s-line,
@@ -296,7 +297,7 @@
             <tr class="border-t row">
               <td class="p-3 whitespace-nowrap"><span class="inline-block px-2 py-0.5 rounded text-xs bg-blue-50 text-blue-600 font-medium">对象模型映射</span></td>
               <td class="p-3 text-gray-600">源对象：注册库 → 当前对象</td>
-              <td class="p-3 text-gray-600">6</td>
+              <td class="p-3 text-gray-600">5</td>
               <td class="p-3 text-gray-500">将参考库复制到注册库</td>
               <td class="p-3 text-xs text-gray-400 leading-5">david001<br>2026-01-16 16:13</td>
               <td class="p-3 text-xs text-gray-400 leading-5">david001<br>2026-01-16 16:13</td>
@@ -389,12 +390,16 @@
           <thead>
             <tr>
               <th colspan="2">
-                <button type="button" id="sourceSelect" class="select-plain" data-value="设计库" title="选择源对象或物料类型" aria-label="源侧" aria-haspopup="listbox">
+                <button type="button" id="sourceSelect" class="select-plain" data-value="设计库" title="选择源对象" aria-label="源侧" aria-haspopup="listbox">
                   <span class="dd-label">设计库</span><i class="ri-arrow-down-s-line"></i>
                 </button>
+                <div id="leftPaneTitle" class="field-map-title hidden whitespace-nowrap overflow-hidden text-ellipsis">Antibody Complex (当前对象模型)</div>
               </th>
               <th colspan="2" class="split">
                 <div class="field-map-title whitespace-nowrap overflow-hidden text-ellipsis" id="rightPaneTitle">注册库 (当前对象模型)</div>
+                <button type="button" id="materialSelect" class="select-plain hidden" data-value="实验产物（普通物料）" title="选择物料类型" aria-label="物料类型" aria-haspopup="listbox">
+                  <span class="dd-label">实验产物（普通物料）</span><i class="ri-arrow-down-s-line"></i>
+                </button>
               </th>
             </tr>
             <tr>
@@ -448,23 +453,18 @@
           { id: 'smiles', name: 'SMILES', type: 'smiles' },
           { id: 'cas', name: 'CAS', type: 'cas' },
           { id: 'mf', name: '分子式 (MF)', type: 'mf' },
-          { id: 'mw', name: '分子量 (MW)', type: 'full_aa_sequence' },
-          { id: 'lookup_iupac', name: 'IUPAC', type: '关联查找' },
-          { id: 'exact_mass', name: 'Exact Mass', type: '公式' },
-          { id: 'atom_count', name: 'Atom Count', type: '汇总' }
+          { id: 'mw', name: '分子量 (MW)', type: 'full_aa_sequence' }
         ],
         targets: [
           { id: 'structure', name: 'Structure', type: 'structure', source: 'structure' },
           { id: 'smiles', name: 'SMILES', type: 'smiles', source: 'smiles' },
           { id: 'cadd', name: 'CADD', type: 'cadd', source: '' },
           { id: 'mf', name: '分子式 (MF)', type: 'mf', source: 'mf' },
-          { id: 'mw', name: '分子量 (MW)', type: 'full_aa_sequence', source: 'mw' },
-          { id: 'iupac', name: 'IUPAC', type: '文本', source: 'lookup_iupac' },
-          { id: 'atom', name: '原子数', type: '数字', source: 'atom_count' }
+          { id: 'mw', name: '分子量 (MW)', type: 'full_aa_sequence', source: 'mw' }
         ]
       }
     };
-    /* 物料侧：基础信息 + 扩展字段类型；不含物料编号/注册数据/化合物/批次 */
+    /* 右侧：物料基础+扩展（物料类型名）。对象计算字段不当目标行。 */
     const MATERIAL_CATALOG = {
       '实验产物（普通物料）': [
         { id: 'mat_name', name: '物料名称', type: '文本' },
@@ -492,25 +492,55 @@
         { id: 'remark', name: '备注', type: '多行文本' }
       ]
     };
-    /* 右侧始终是当前对象字段 + Registry 字段类型，不能套用物料类型名 */
-    const OBJECT_FIELDS_FOR_MATERIAL = [
-      { id: 'name', name: '名称', type: '文本', byMaterial: { '实验产物（普通物料）': 'mat_name', '细胞株库（细胞）': 'mat_name' } },
-      { id: 'code', name: '编号', type: '文本', byMaterial: {} },
-      { id: 'alias', name: '别名', type: '文本', byMaterial: { '实验产物（普通物料）': 'alias', '细胞株库（细胞）': 'alias' } },
-      { id: 'spec', name: '规格', type: '文本', byMaterial: { '实验产物（普通物料）': 'spec' } },
-      { id: 'conc', name: '浓度', type: '数字', byMaterial: { '实验产物（普通物料）': 'conc' } },
-      { id: 'purity', name: '纯度', type: '数字', byMaterial: { '实验产物（普通物料）': 'purity' } },
-      { id: 'content', name: '含量', type: '数字', byMaterial: { '实验产物（普通物料）': 'content' } },
-      { id: 'maker', name: '生产厂家', type: '下拉选择', byMaterial: { '实验产物（普通物料）': 'maker', '细胞株库（细胞）': 'maker' } },
-      { id: 'storage', name: '储存条件', type: '下拉选择', byMaterial: { '实验产物（普通物料）': 'storage', '细胞株库（细胞）': 'storage' } },
-      { id: 'hazard', name: '危险特性', type: '下拉选择', byMaterial: { '实验产物（普通物料）': 'hazard' } },
-      { id: 'cold', name: '低温保存', type: '勾选', byMaterial: { '实验产物（普通物料）': 'cold', '细胞株库（细胞）': 'cold' } },
-      { id: 'msds', name: 'MSDS', type: '附件', byMaterial: { '实验产物（普通物料）': 'msds' } },
-      { id: 'img', name: '结构示意图', type: '图片', byMaterial: { '细胞株库（细胞）': 'photo' } },
-      { id: 'remark', name: '备注', type: '文本', byMaterial: { '实验产物（普通物料）': 'remark', '细胞株库（细胞）': 'remark' } },
-      { id: 'project', name: '所属项目', type: '关联', byMaterial: {} },
-      { id: 'seq', name: '氨基酸序列', type: '文本', byMaterial: {} }
+    /* 左侧：当前对象字段（Registry 类型）。计算字段只作源，可映到物料文本/数值 */
+    const OBJECT_SOURCES_FOR_MATERIAL = [
+      { id: 'name', name: '名称', type: '文本' },
+      { id: 'code', name: '编号', type: '文本' },
+      { id: 'alias', name: '别名', type: '文本' },
+      { id: 'spec', name: '规格', type: '文本' },
+      { id: 'conc', name: '浓度', type: '数字' },
+      { id: 'purity', name: '纯度', type: '数字' },
+      { id: 'content', name: '含量', type: '数字' },
+      { id: 'maker', name: '生产厂家', type: '下拉选择' },
+      { id: 'storage', name: '储存条件', type: '下拉选择' },
+      { id: 'hazard', name: '危险特性', type: '下拉选择' },
+      { id: 'cold', name: '低温保存', type: '勾选' },
+      { id: 'msds', name: 'MSDS', type: '附件' },
+      { id: 'img', name: '结构示意图', type: '图片' },
+      { id: 'remark', name: '备注', type: '文本' },
+      { id: 'project', name: '所属项目', type: '关联' },
+      { id: 'seq', name: '氨基酸序列', type: '文本' },
+      { id: 'lookup_name', name: '通用名', type: '关联查找' },
+      { id: 'formula_conc', name: '计算浓度', type: '公式' },
+      { id: 'rollup_purity', name: '批次纯度', type: '汇总' }
     ];
+    const MATERIAL_DEFAULTS = {
+      '实验产物（普通物料）': {
+        mat_name: 'name',
+        alias: 'alias',
+        spec: 'spec',
+        conc: 'formula_conc',
+        purity: 'rollup_purity',
+        content: 'content',
+        maker: 'maker',
+        grade: 'lookup_name',
+        storage: 'storage',
+        hazard: 'hazard',
+        cold: 'cold',
+        msds: 'msds',
+        remark: 'remark'
+      },
+      '细胞株库（细胞）': {
+        mat_name: 'name',
+        alias: 'alias',
+        en_name: 'lookup_name',
+        maker: 'maker',
+        photo: 'img',
+        storage: 'storage',
+        cold: 'cold',
+        remark: 'remark'
+      }
+    };
 
     function showModal(id) {
       document.getElementById(id).classList.remove('hidden');
@@ -672,20 +702,22 @@
     document.addEventListener('scroll', closeChoiceMenu, true);
 
     function currentMaterialType() {
-      return document.getElementById('sourceSelect').dataset.value;
+      return document.getElementById('materialSelect').dataset.value;
+    }
+    function isMaterialMapping() {
+      return document.getElementById('fieldMappingType').value === 'material';
     }
     function currentCatalog() {
-      const type = document.getElementById('fieldMappingType').value;
-      if (type !== 'material') return FIELD_MAP.object;
+      if (!isMaterialMapping()) return FIELD_MAP.object;
       const mat = currentMaterialType();
-      const sources = MATERIAL_CATALOG[mat] || MATERIAL_CATALOG['实验产物（普通物料）'];
-      const targets = OBJECT_FIELDS_FOR_MATERIAL.map(t => ({
+      const defaults = MATERIAL_DEFAULTS[mat] || {};
+      const targets = (MATERIAL_CATALOG[mat] || MATERIAL_CATALOG['实验产物（普通物料）']).map(t => ({
         id: t.id,
         name: t.name,
         type: t.type,
-        source: (t.byMaterial && t.byMaterial[mat]) || ''
+        source: defaults[t.id] || ''
       }));
-      return { sources, targets };
+      return { sources: OBJECT_SOURCES_FOR_MATERIAL, targets };
     }
     function sourceById(id) {
       return currentCatalog().sources.find(s => s.id === id);
@@ -699,17 +731,19 @@
       return type === '关联查找' || type === '公式' || type === '汇总';
     }
     function allowsCalcSource(targetType) {
-      return targetType === '文本' || targetType === '数字';
+      return targetType === '文本' || targetType === '数字' || targetType === '数值' ||
+        targetType === '长文本' || targetType === '单行文本' || targetType === '计数器';
     }
     function sourceFieldItems(exceptBtn) {
       const used = usedSourceIds(exceptBtn);
       const targetType = exceptBtn.dataset.targetType;
+      const restrictCalc = isMaterialMapping();
       return [{ value: '', label: '不设置' }].concat(currentCatalog().sources.map(s => ({
         value: s.id,
         label: s.name,
         hint: s.type,
         disabled: (used.includes(s.id) && exceptBtn.dataset.value !== s.id) ||
-          (isCalcType(s.type) && !allowsCalcSource(targetType))
+          (restrictCalc && isCalcType(s.type) && !allowsCalcSource(targetType))
       })));
     }
     function setSourceFieldBtn(btn, sourceId) {
@@ -736,11 +770,22 @@
       const btn = document.getElementById('sourceSelect');
       btn.onclick = (e) => {
         e.stopPropagation();
-        const opts = SOURCE_OBJECTS[document.getElementById('fieldMappingType').value].map(name => ({ value: name, label: name }));
+        const opts = SOURCE_OBJECTS.object.map(name => ({ value: name, label: name }));
         openChoiceMenu(btn, opts, btn.dataset.value, (v, label) => {
           btn.dataset.value = v;
           btn.querySelector('.dd-label').textContent = label;
-          if (document.getElementById('fieldMappingType').value === 'material') renderFieldMap();
+        });
+      };
+    }
+    function bindMaterialTypeBtn() {
+      const btn = document.getElementById('materialSelect');
+      btn.onclick = (e) => {
+        e.stopPropagation();
+        const opts = SOURCE_OBJECTS.material.map(name => ({ value: name, label: name }));
+        openChoiceMenu(btn, opts, btn.dataset.value, (v, label) => {
+          btn.dataset.value = v;
+          btn.querySelector('.dd-label').textContent = label;
+          renderFieldMap();
         });
       };
     }
@@ -764,22 +809,25 @@
       updateMappedCount();
     }
     function switchMappingType() {
-      const type = document.getElementById('fieldMappingType').value;
-      const isMaterial = type === 'material';
+      const isMaterial = isMaterialMapping();
       document.getElementById('autoWriteTip').classList.toggle('hidden', !isMaterial);
       document.getElementById('autoWriteTip').classList.toggle('flex', isMaterial);
       document.getElementById('batchFilterTip').classList.toggle('hidden', !isMaterial);
       document.getElementById('batchFilterTip').classList.toggle('flex', isMaterial);
-      const names = SOURCE_OBJECTS[type];
-      const btn = document.getElementById('sourceSelect');
-      btn.dataset.value = names[0];
-      btn.querySelector('.dd-label').textContent = names[0];
-      document.getElementById('rightPaneTitle').innerText = isMaterial
-        ? 'Antibody Complex (当前对象模型)'
-        : '注册库 (当前对象模型)';
+      document.getElementById('sourceSelect').classList.toggle('hidden', isMaterial);
+      document.getElementById('leftPaneTitle').classList.toggle('hidden', !isMaterial);
+      document.getElementById('rightPaneTitle').classList.toggle('hidden', isMaterial);
+      document.getElementById('materialSelect').classList.toggle('hidden', !isMaterial);
+      if (!isMaterial) {
+        const names = SOURCE_OBJECTS.object;
+        const btn = document.getElementById('sourceSelect');
+        btn.dataset.value = names[0];
+        btn.querySelector('.dd-label').textContent = names[0];
+        document.getElementById('rightPaneTitle').innerText = '注册库 (当前对象模型)';
+      }
       document.getElementById('pairHint').innerText = isMaterial
-        ? '右侧是当前对象字段（文本/数字/下拉选择/勾选/附件/关联…）；左侧选物料字段（数值/列表/下拉选择框/开关按钮/上传…）。两侧目录与类型体系不同。'
-        : '右侧不含计算字段（目标自算）。源侧关联查找/公式/汇总可映到文本或数字；其他目标行中这些源字段不可选。';
+        ? '物料对照：右侧是物料基础/扩展字段。左侧选当前对象字段。对象计算字段（关联查找/公式/汇总）可映到物料文本或数值；不能作为写入目标。'
+        : '同一行即一对映射。右侧为当前对象全部字段；左侧选择源字段，不需要的选「不设置」。';
       renderFieldMap();
     }
     function updateMappedCount() {
@@ -801,6 +849,7 @@
       lastMappingType = 'object';
       switchMappingType();
       bindSourceObjectBtn();
+      bindMaterialTypeBtn();
       const h = location.hash;
       if (h === '#mapping-config') openFieldMapping('object', 'none');
       else if (h === '#mapping-config-material') openFieldMapping('material', 'none');
