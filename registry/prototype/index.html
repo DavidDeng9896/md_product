@@ -320,7 +320,6 @@
           <i class="ri-information-line mt-0.5"></i>
           <span><span class="font-medium">系统自动写入，不在对照表配置：</span>物料编号（自动生成，可改）、注册数据（指向源对象实体）、计量单位/计量小数位（按物料类型带出）。</span>
         </div>
-        <div class="text-xs text-gray-400 mt-3" id="pairHint">左右同行即一对映射；拖动手柄调整对齐。未映射的一侧显示为「未映射」。</div>
 
         <div class="map-split mt-2">
           <div class="map-pane">
@@ -400,7 +399,10 @@
         <div id="batchFilterTip" class="hidden items-center gap-1.5 text-xs text-gray-400 mt-3"><i class="ri-filter-3-line"></i>批次信息字段已过滤，不参与映射。</div>
       </div>
       <div class="border-t border-[#f0f0f0] px-6 py-2.5 flex items-center justify-end gap-2 shrink-0">
-        <div class="text-xs text-gray-400 mr-auto" id="mappedCountTip"></div>
+        <div class="mr-auto min-w-0 pr-3">
+          <div class="text-xs text-gray-400" id="pairHint"></div>
+          <div class="text-xs text-gray-400" id="mappedCountTip"></div>
+        </div>
         <button class="border border-[#d9d9d9] btn-plain px-4 h-8 rounded-md text-sm text-[rgba(0,0,0,.88)]" onclick="closeFieldMapping()">取消</button>
         <button class="bg-[#1677ff] btn-primary text-white px-4 h-8 rounded-md text-sm" onclick="saveFieldMapping()">确认</button>
       </div>
@@ -523,15 +525,16 @@
       if (suppressTypeChange) return;
       const next = sel.value;
       if (next === lastMappingType) return;
+      sel.value = lastMappingType;
       const ok = await askConfirm(
         '切换映射关系',
         '两类映射相互独立。切换后将更换左右字段表，当前未保存的字段对应会丢失。是否继续？'
       );
-      if (!ok) {
-        sel.value = lastMappingType;
-        return;
-      }
+      if (!ok) return;
+      suppressTypeChange = true;
+      sel.value = next;
       lastMappingType = next;
+      suppressTypeChange = false;
       switchMappingType();
     }
     async function askDeleteMapping(el) {
@@ -616,8 +619,8 @@
         ? 'Antibody Complex (当前对象模型)'
         : '注册库 (当前对象模型)';
       document.getElementById('pairHint').innerText = isMaterial
-        ? '左右同行即一对映射（物料字段 ← 对象字段）；拖动手柄对齐。批次字段已过滤，系统自动写入项不在表中。'
-        : '左右同行即一对映射；拖动手柄将源字段与当前对象字段对齐。复制方向：左侧源对象 → 右侧当前对象。';
+        ? '左右同行即一对映射（物料字段 ← 对象字段）。批次字段已过滤。'
+        : '左右同行即一对映射；拖动手柄对齐。复制：左侧源对象 → 右侧当前对象。';
       bindMapInteractions();
       updateMappedCount();
     }
