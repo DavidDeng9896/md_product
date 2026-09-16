@@ -317,25 +317,19 @@
 
         <div class="map-split mt-4">
           <div class="map-pane">
+            <select id="sourceSelect" class="ant-ctrl focus-ring mb-2" title="选择源对象或物料类型" aria-label="源侧"></select>
             <table id="leftMapTable" class="map-table">
               <thead>
-                <tr>
-                  <th colspan="2">
-                    <select id="sourceSelect" class="ant-ctrl focus-ring" title="选择源对象或物料类型" aria-label="源侧"></select>
-                  </th>
-                </tr>
+                <tr><th>名称</th><th>字段类型</th></tr>
               </thead>
               <tbody id="leftMapBody"></tbody>
             </table>
           </div>
           <div class="map-pane">
+            <div class="field-map-title whitespace-nowrap overflow-hidden text-ellipsis mb-2" id="rightPaneTitle">注册库 (当前对象模型)</div>
             <table id="rightMapTable" class="map-table">
               <thead>
-                <tr>
-                  <th colspan="2">
-                    <div class="field-map-title whitespace-nowrap overflow-hidden text-ellipsis" id="rightPaneTitle">注册库 (当前对象模型)</div>
-                  </th>
-                </tr>
+                <tr><th>名称</th><th>字段类型</th></tr>
               </thead>
               <tbody id="rightMapBody"></tbody>
             </table>
