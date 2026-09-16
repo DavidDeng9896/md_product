@@ -83,6 +83,22 @@
     }
     .map-pane { min-width: 0; }
     .map-pane + .map-pane { border-left: 1px solid #f0f0f0; }
+    .map-table tr.pair-hover > td { background: #e6f4ff; }
+    .map-table tr.drag-over > td { background: #f0f5ff; }
+    .map-table tr.dragging { opacity: 0.45; }
+    .map-table .empty-slot { color: rgba(0,0,0,.25); }
+    .toast {
+      position: fixed;
+      top: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,.75);
+      color: #fff;
+      font-size: 13px;
+      padding: 8px 16px;
+      border-radius: 6px;
+      z-index: 80;
+    }
   </style>
 </head>
 <body class="bg-white text-gray-800 min-h-screen">
@@ -135,7 +151,7 @@
               <td class="p-3 text-gray-500">明度智云</td>
               <td class="p-3 text-gray-500">自定义</td>
               <td class="p-3 text-gray-500">抗体发现二部</td>
-              <td class="p-3"><span class="inline-flex items-center gap-1 text-blue-600 cursor-pointer hover:underline"><span>2</span><i class="ri-edit-line text-sm"></i></span></td>
+              <td class="p-3"><span class="inline-flex items-center gap-1 text-blue-600 cursor-pointer hover:underline" onclick="openMappingList()"><span>2</span><i class="ri-edit-line text-sm"></i></span></td>
               <td class="p-3 text-gray-500">david001</td>
               <td class="p-3 text-gray-500">2026-01-16 16:13</td>
               <td class="p-3 text-gray-500">david001</td>
@@ -148,7 +164,7 @@
               <td class="p-3 text-gray-500">明度智云</td>
               <td class="p-3 text-gray-500">自定义</td>
               <td class="p-3 text-gray-500">抗体发现一部，抗体发现二部</td>
-              <td class="p-3"><span class="inline-flex items-center gap-1 text-blue-600 cursor-pointer hover:underline"><span>0</span><i class="ri-edit-line text-sm"></i></span></td>
+              <td class="p-3"><span class="inline-flex items-center gap-1 text-blue-600 cursor-pointer hover:underline" onclick="openMappingList(true)"><span>0</span><i class="ri-edit-line text-sm"></i></span></td>
               <td class="p-3 text-gray-500">david001</td>
               <td class="p-3 text-gray-500">2026-01-16 16:13</td>
               <td class="p-3 text-gray-500">david001</td>
@@ -161,7 +177,7 @@
               <td class="p-3 text-gray-500">明度智云</td>
               <td class="p-3 text-gray-500">DNA</td>
               <td class="p-3 text-gray-500">抗体发现二部</td>
-              <td class="p-3"><span class="inline-flex items-center gap-1 text-blue-600 cursor-pointer hover:underline"><span>0</span><i class="ri-edit-line text-sm"></i></span></td>
+              <td class="p-3"><span class="inline-flex items-center gap-1 text-blue-600 cursor-pointer hover:underline" onclick="openMappingList(true)"><span>0</span><i class="ri-edit-line text-sm"></i></span></td>
               <td class="p-3 text-gray-500">david001</td>
               <td class="p-3 text-gray-500">2026-01-16 16:13</td>
               <td class="p-3 text-gray-500">david001</td>
@@ -174,7 +190,7 @@
               <td class="p-3 text-gray-500">明度智云</td>
               <td class="p-3 text-gray-500">化合物</td>
               <td class="p-3 text-gray-500">抗体发现一部</td>
-              <td class="p-3"><span class="inline-flex items-center gap-1 text-blue-600 cursor-pointer hover:underline"><span>0</span><i class="ri-edit-line text-sm"></i></span></td>
+              <td class="p-3"><span class="inline-flex items-center gap-1 text-blue-600 cursor-pointer hover:underline" onclick="openMappingList(true)"><span>0</span><i class="ri-edit-line text-sm"></i></span></td>
               <td class="p-3 text-gray-500">david001</td>
               <td class="p-3 text-gray-500">2026-01-16 16:13</td>
               <td class="p-3 text-gray-500">david001</td>
@@ -196,10 +212,15 @@
       </div>
       <div class="p-5 overflow-y-auto overflow-x-hidden flex-1">
         <div class="flex items-center justify-between mb-3">
-          <div class="text-sm text-gray-500">同一对象可配置多套映射关系<br>（对象模型映射、对象与物料信息映射可并存）</div>
+          <div class="text-sm text-gray-500">同一对象可配置多套映射关系<br>（对象模型映射、对象与物料信息映射可并存；同源同目标至多一套）</div>
           <button class="bg-blue-600 btn-primary text-white text-sm px-3 py-1.5 rounded-md" onclick="openMappingTypeSelect()"><i class="ri-add-line mr-0.5"></i>新增</button>
         </div>
-        <table class="w-full text-sm border rounded-md overflow-hidden">
+        <div id="mappingListEmpty" class="hidden border rounded-md py-16 text-center">
+          <div class="text-sm text-gray-500 mb-1">尚未配置映射关系</div>
+          <div class="text-xs text-gray-400 mb-4">配置后可从源实体「复制到...」按映射生成目标数据</div>
+          <button class="bg-blue-600 btn-primary text-white text-sm px-3 py-1.5 rounded-md" onclick="openMappingTypeSelect()"><i class="ri-add-line mr-0.5"></i>新增映射</button>
+        </div>
+        <table id="mappingListTable" class="w-full text-sm border rounded-md overflow-hidden">
           <thead class="bg-gray-50 text-left text-gray-600">
             <tr>
               <th class="p-3">映射关系</th>
@@ -219,7 +240,7 @@
               <td class="p-3 text-gray-500">将参考库复制到注册库</td>
               <td class="p-3 text-xs text-gray-400 leading-5">david001<br>2026-01-16 16:13</td>
               <td class="p-3 text-xs text-gray-400 leading-5">david001<br>2026-01-16 16:13</td>
-              <td class="p-3 text-blue-600 whitespace-nowrap"><span class="cursor-pointer hover:underline" onclick="openFieldMapping('object')">设置</span> <span class="cursor-pointer hover:underline ml-3 text-red-600">删除</span></td>
+              <td class="p-3 text-blue-600 whitespace-nowrap"><span class="cursor-pointer hover:underline" onclick="openFieldMapping('object','list')">设置</span> <span class="cursor-pointer hover:underline ml-3 text-red-600" onclick="askDeleteMapping(this)">删除</span></td>
             </tr>
             <tr class="border-t row">
               <td class="p-3 whitespace-nowrap"><span class="inline-block px-2 py-0.5 rounded text-xs bg-emerald-50 text-emerald-600 font-medium">对象与物料信息映射</span></td>
@@ -228,7 +249,7 @@
               <td class="p-3 text-gray-500">实验中产出的样品同步注册</td>
               <td class="p-3 text-xs text-gray-400 leading-5">david001<br>2026-01-16 16:13</td>
               <td class="p-3 text-xs text-gray-400 leading-5">david001<br>2026-01-16 16:13</td>
-              <td class="p-3 text-blue-600 whitespace-nowrap"><span class="cursor-pointer hover:underline" onclick="openFieldMapping('material')">设置</span> <span class="cursor-pointer hover:underline ml-3 text-red-600">删除</span></td>
+              <td class="p-3 text-blue-600 whitespace-nowrap"><span class="cursor-pointer hover:underline" onclick="openFieldMapping('material','list')">设置</span> <span class="cursor-pointer hover:underline ml-3 text-red-600" onclick="askDeleteMapping(this)">删除</span></td>
             </tr>
           </tbody>
         </table>
@@ -241,7 +262,7 @@
     <div class="bg-white rounded-lg shadow-xl w-[440px]">
       <div class="flex items-center justify-between px-5 py-3 border-b">
         <div class="font-medium">新增映射</div>
-        <button class="text-gray-400 hover:text-gray-600" onclick="closeAll()"><i class="ri-close-line text-lg"></i></button>
+        <button class="text-gray-400 hover:text-gray-600" onclick="backToMappingList()"><i class="ri-close-line text-lg"></i></button>
       </div>
       <div class="p-5">
         <label class="block text-sm text-gray-600 mb-1.5"><span class="text-red-500 mr-0.5">*</span>映射关系</label>
@@ -264,7 +285,7 @@
           <div class="text-xs text-gray-400 mt-1.5">仅显示"已发布 + 启用"且未被其他对象绑定的物料类型</div>
         </div>
         <div class="flex justify-end gap-2 mt-5">
-          <button class="border btn-plain px-4 py-1.5 rounded-md text-sm text-gray-600" onclick="closeAll()">取消</button>
+          <button class="border btn-plain px-4 py-1.5 rounded-md text-sm text-gray-600" onclick="backToMappingList()">取消</button>
           <button class="bg-blue-600 btn-primary text-white px-4 py-1.5 rounded-md text-sm" onclick="goNextStep()">下一步</button>
         </div>
       </div>
@@ -276,17 +297,17 @@
     <div class="bg-white rounded-lg shadow-xl w-[920px] max-w-[95vw] max-h-[90vh] flex flex-col">
       <div class="flex items-center justify-between px-6 py-3 border-b border-[#f0f0f0] shrink-0">
         <div class="text-[16px] font-medium text-[rgba(0,0,0,.88)]">映射关系设置</div>
-        <button class="text-[rgba(0,0,0,.45)] hover:text-[rgba(0,0,0,.88)] leading-none" onclick="closeAll()"><i class="ri-close-line text-[18px]"></i></button>
+        <button class="text-[rgba(0,0,0,.45)] hover:text-[rgba(0,0,0,.88)] leading-none" onclick="closeFieldMapping()"><i class="ri-close-line text-[18px]"></i></button>
       </div>
       <div class="px-6 pt-5 pb-2 overflow-y-auto overflow-x-hidden flex-1">
         <div class="grid grid-cols-2 gap-x-6">
           <div>
             <label class="form-label">映射关系</label>
-            <select id="fieldMappingType" class="ant-ctrl focus-ring" onchange="switchMappingType()">
+            <select id="fieldMappingType" class="ant-ctrl focus-ring" onchange="onFieldMappingTypeChange(this)">
               <option value="object">对象模型映射</option>
               <option value="material">对象与物料信息映射</option>
             </select>
-            <select id="sourceSelect" class="ant-ctrl focus-ring mt-4"></select>
+            <select id="sourceSelect" class="ant-ctrl focus-ring mt-4" title="选择源对象或物料类型" aria-label="源侧"></select>
           </div>
           <div>
             <label class="form-label">备注</label>
@@ -297,8 +318,9 @@
 
         <div id="autoWriteTip" class="hidden items-start gap-2 bg-blue-50 text-blue-700 text-sm px-4 py-2.5 rounded-md mt-3">
           <i class="ri-information-line mt-0.5"></i>
-          <span><span class="font-medium">系统自动写入：</span>物料编号（自动生成，可改）、注册数据（自动指向源对象实体）、计量单位/计量小数位（按物料类型自动带出）。以上字段无需配置映射。</span>
+          <span><span class="font-medium">系统自动写入，不在对照表配置：</span>物料编号（自动生成，可改）、注册数据（指向源对象实体）、计量单位/计量小数位（按物料类型带出）。</span>
         </div>
+        <div class="text-xs text-gray-400 mt-3" id="pairHint">左右同行即一对映射；拖动手柄调整对齐。未映射的一侧显示为「未映射」。</div>
 
         <div class="map-split mt-2">
           <div class="map-pane">
@@ -307,11 +329,12 @@
                 <tr><th></th><th>名称</th><th>字段类型</th></tr>
               </thead>
               <tbody>
-                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>Structure</td><td>structure</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>SMILES</td><td>smiles</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>CAS</td><td>cas</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>分子式 (MF)</td><td>mf</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>分子量 (MW)</td><td>full_aa_sequence</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td>Structure</td><td>structure</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td>SMILES</td><td>smiles</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td>CAS</td><td>cas</td></tr>
+                <tr class="row" data-empty="1"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td class="empty-slot">未映射</td><td class="empty-slot">—</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td>分子式 (MF)</td><td>mf</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td>分子量 (MW)</td><td>full_aa_sequence</td></tr>
               </tbody>
             </table>
             <table id="leftMaterialTable" class="map-table hidden">
@@ -319,23 +342,20 @@
                 <tr><th></th><th>名称</th><th>字段类型</th></tr>
               </thead>
               <tbody>
-                <tr class="row bg-blue-50/40"><td><i class="ri-draggable"></i></td><td class="text-blue-600"><i class="ri-robot-line mr-1"></i>物料编号（系统自动写入）</td><td>特殊</td></tr>
-                <tr class="row bg-blue-50/40"><td><i class="ri-draggable"></i></td><td class="text-blue-600"><i class="ri-robot-line mr-1"></i>注册数据（系统自动写入）</td><td>特殊</td></tr>
-                <tr class="row bg-blue-50/40"><td><i class="ri-draggable"></i></td><td class="text-blue-600"><i class="ri-robot-line mr-1"></i>计量单位（系统自动写入）</td><td>特殊</td></tr>
-                <tr class="row bg-blue-50/40"><td><i class="ri-draggable"></i></td><td class="text-blue-600"><i class="ri-robot-line mr-1"></i>计量小数位（系统自动写入）</td><td>特殊</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>物料名称</td><td>文本</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>别名</td><td>文本</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>规格型号</td><td>文本</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>浓度</td><td>数值</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>纯度</td><td>数值</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>含量</td><td>数值</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>生产厂家</td><td>列表</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>级别</td><td>文本</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>储存条件</td><td>下拉选择框</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>危险特性</td><td>复选框</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>是否低温保存</td><td>开关按钮</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>MSDS 文件</td><td>上传</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>备注</td><td>多行文本</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td>物料名称</td><td>文本</td></tr>
+                <tr class="row" data-empty="1"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td class="empty-slot">未映射</td><td class="empty-slot">—</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td>别名</td><td>文本</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td>规格型号</td><td>文本</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td>浓度</td><td>数值</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td>纯度</td><td>数值</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td>含量</td><td>数值</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td>生产厂家</td><td>列表</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td>级别</td><td>文本</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td>储存条件</td><td>下拉选择框</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td>危险特性</td><td>复选框</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td>是否低温保存</td><td>开关按钮</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td>MSDS 文件</td><td>上传</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td>备注</td><td>多行文本</td></tr>
               </tbody>
             </table>
           </div>
@@ -345,11 +365,12 @@
                 <tr><th></th><th>名称</th><th>字段类型</th></tr>
               </thead>
               <tbody>
-                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>Structure</td><td>structure</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>SMILES</td><td>smiles</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>CADD</td><td>cadd</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>分子式 (MF)</td><td>mf</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>分子量 (MW)</td><td>full_aa_sequence</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td>Structure</td><td>structure</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td>SMILES</td><td>smiles</td></tr>
+                <tr class="row" data-empty="1"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td class="empty-slot">未映射</td><td class="empty-slot">—</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td>CADD</td><td>cadd</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td>分子式 (MF)</td><td>mf</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td>分子量 (MW)</td><td>full_aa_sequence</td></tr>
               </tbody>
             </table>
             <table id="rightMaterialTable" class="map-table hidden">
@@ -380,13 +401,34 @@
       </div>
       <div class="border-t border-[#f0f0f0] px-6 py-2.5 flex items-center justify-end gap-2 shrink-0">
         <div class="text-xs text-gray-400 mr-auto" id="mappedCountTip"></div>
-        <button class="border border-[#d9d9d9] btn-plain px-4 h-8 rounded-md text-sm text-[rgba(0,0,0,.88)]" onclick="closeAll()">取消</button>
-        <button class="bg-[#1677ff] btn-primary text-white px-4 h-8 rounded-md text-sm" onclick="closeAll()">确认</button>
+        <button class="border border-[#d9d9d9] btn-plain px-4 h-8 rounded-md text-sm text-[rgba(0,0,0,.88)]" onclick="closeFieldMapping()">取消</button>
+        <button class="bg-[#1677ff] btn-primary text-white px-4 h-8 rounded-md text-sm" onclick="saveFieldMapping()">确认</button>
       </div>
     </div>
   </div>
 
+  <div id="confirmModal" class="fixed inset-0 modal-backdrop hidden items-center justify-center z-[70]">
+    <div class="bg-white rounded-lg shadow-xl w-[400px] max-w-[92vw]">
+      <div class="flex items-center justify-between px-5 py-3 border-b">
+        <div class="font-medium" id="confirmTitle">确认</div>
+        <button class="text-gray-400 hover:text-gray-600" onclick="resolveConfirm(false)"><i class="ri-close-line text-lg"></i></button>
+      </div>
+      <div class="px-5 py-4 text-sm text-gray-600 leading-6" id="confirmMsg"></div>
+      <div class="px-5 py-3 flex justify-end gap-2 border-t">
+        <button class="border btn-plain px-4 py-1.5 rounded-md text-sm text-gray-600" onclick="resolveConfirm(false)">取消</button>
+        <button class="bg-[#1677ff] btn-primary text-white px-4 py-1.5 rounded-md text-sm" onclick="resolveConfirm(true)">确定</button>
+      </div>
+    </div>
+  </div>
+  <div id="toast" class="toast hidden"></div>
+
   <script>
+    let mappingReturnTo = 'none';
+    let lastMappingType = 'object';
+    let suppressTypeChange = false;
+    let confirmResolver = null;
+    let dragRow = null;
+
     function showModal(id) {
       document.getElementById(id).classList.remove('hidden');
       document.getElementById(id).classList.add('flex');
@@ -398,12 +440,45 @@
     function closeAll() {
       ['mappingListModal', 'mappingTypeModal', 'fieldMappingModal'].forEach(hideModal);
     }
-    function openMappingList() {
+    function askConfirm(title, msg) {
+      document.getElementById('confirmTitle').innerText = title;
+      document.getElementById('confirmMsg').innerText = msg;
+      showModal('confirmModal');
+      return new Promise(resolve => { confirmResolver = resolve; });
+    }
+    function resolveConfirm(ok) {
+      hideModal('confirmModal');
+      if (confirmResolver) confirmResolver(ok);
+      confirmResolver = null;
+    }
+    function showToast(text) {
+      const el = document.getElementById('toast');
+      el.innerText = text;
+      el.classList.remove('hidden');
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(() => el.classList.add('hidden'), 1600);
+    }
+    function setMappingListEmpty(empty) {
+      document.getElementById('mappingListEmpty').classList.toggle('hidden', !empty);
+      document.getElementById('mappingListTable').classList.toggle('hidden', empty);
+    }
+    function openMappingList(empty) {
       closeAll();
+      setMappingListEmpty(!!empty);
+      showModal('mappingListModal');
+    }
+    function backToMappingList() {
+      hideModal('mappingTypeModal');
+      hideModal('fieldMappingModal');
+      const table = document.getElementById('mappingListTable');
+      const empty = table.classList.contains('hidden') || table.tBodies[0].rows.length === 0;
+      setMappingListEmpty(empty);
       showModal('mappingListModal');
     }
     function openMappingTypeSelect() {
       document.getElementById('mappingTypeError').classList.add('hidden');
+      document.getElementById('mappingListModal').classList.remove('hidden');
+      document.getElementById('mappingListModal').classList.add('flex');
       showModal('mappingTypeModal');
     }
     function onMappingTypeChange() {
@@ -418,14 +493,110 @@
         document.getElementById('mappingTypeError').classList.remove('hidden');
         return;
       }
-      closeAll();
-      openFieldMapping(v);
+      hideModal('mappingTypeModal');
+      openFieldMapping(v, 'new');
     }
-function openFieldMapping(type) {
-      closeAll();
+    function openFieldMapping(type, from) {
+      hideModal('mappingTypeModal');
+      hideModal('mappingListModal');
+      mappingReturnTo = from || 'none';
+      suppressTypeChange = true;
       document.getElementById('fieldMappingType').value = type || 'object';
+      lastMappingType = type || 'object';
       switchMappingType();
+      suppressTypeChange = false;
       showModal('fieldMappingModal');
+    }
+    function closeFieldMapping() {
+      hideModal('fieldMappingModal');
+      if (mappingReturnTo === 'new') showModal('mappingTypeModal');
+      else if (mappingReturnTo === 'list') showModal('mappingListModal');
+    }
+    function saveFieldMapping() {
+      hideModal('fieldMappingModal');
+      showToast('映射已保存');
+      if (mappingReturnTo === 'none') return;
+      setMappingListEmpty(false);
+      showModal('mappingListModal');
+    }
+    async function onFieldMappingTypeChange(sel) {
+      if (suppressTypeChange) return;
+      const next = sel.value;
+      if (next === lastMappingType) return;
+      const ok = await askConfirm(
+        '切换映射关系',
+        '两类映射相互独立。切换后将更换左右字段表，当前未保存的字段对应会丢失。是否继续？'
+      );
+      if (!ok) {
+        sel.value = lastMappingType;
+        return;
+      }
+      lastMappingType = next;
+      switchMappingType();
+    }
+    async function askDeleteMapping(el) {
+      const ok = await askConfirm('删除映射', '删除后不影响已复制生成的数据，但无法再按此规则复制。是否删除？');
+      if (!ok) return;
+      const tr = el.closest('tr');
+      tr.parentNode.removeChild(tr);
+      const empty = document.querySelectorAll('#mappingListTable tbody tr').length === 0;
+      setMappingListEmpty(empty);
+      showToast('映射已删除');
+    }
+    function visibleMapBodies() {
+      const panes = document.querySelectorAll('#fieldMappingModal .map-pane');
+      return [
+        panes[0].querySelector('table:not(.hidden) tbody'),
+        panes[1].querySelector('table:not(.hidden) tbody')
+      ];
+    }
+    function clearPairHover() {
+      document.querySelectorAll('#fieldMappingModal .map-table tr.pair-hover').forEach(tr => tr.classList.remove('pair-hover'));
+    }
+    function highlightPair(index) {
+      const [left, right] = visibleMapBodies();
+      clearPairHover();
+      if (left && left.rows[index]) left.rows[index].classList.add('pair-hover');
+      if (right && right.rows[index]) right.rows[index].classList.add('pair-hover');
+    }
+    function bindMapInteractions() {
+      const [left, right] = visibleMapBodies();
+      [left, right].forEach(tbody => {
+        if (!tbody) return;
+        Array.from(tbody.rows).forEach(tr => { tr.draggable = true; });
+        if (tbody.dataset.bound === '1') return;
+        tbody.dataset.bound = '1';
+        tbody.addEventListener('mouseover', e => {
+          const tr = e.target.closest('tr');
+          if (!tr || !tbody.contains(tr)) return;
+          highlightPair(tr.rowIndex - 1);
+        });
+        tbody.addEventListener('mouseleave', clearPairHover);
+        tbody.addEventListener('dragstart', e => {
+          const tr = e.target.closest('tr');
+          if (!tr) return;
+          dragRow = tr;
+          tr.classList.add('dragging');
+          e.dataTransfer.effectAllowed = 'move';
+        });
+        tbody.addEventListener('dragend', () => {
+          if (dragRow) dragRow.classList.remove('dragging');
+          tbody.querySelectorAll('tr.drag-over').forEach(r => r.classList.remove('drag-over'));
+          dragRow = null;
+          updateMappedCount();
+        });
+        tbody.addEventListener('dragover', e => {
+          e.preventDefault();
+          const over = e.target.closest('tr');
+          if (!dragRow || !over || over === dragRow || over.parentNode !== dragRow.parentNode) return;
+          tbody.querySelectorAll('tr.drag-over').forEach(r => r.classList.remove('drag-over'));
+          over.classList.add('drag-over');
+          const rect = over.getBoundingClientRect();
+          const after = e.clientY > rect.top + rect.height / 2;
+          over.parentNode.insertBefore(dragRow, after ? over.nextSibling : over);
+        });
+        tbody.addEventListener('drop', e => e.preventDefault());
+      });
     }
     function switchMappingType() {
       const type = document.getElementById('fieldMappingType').value;
@@ -444,28 +615,43 @@ function openFieldMapping(type) {
       document.getElementById('rightPaneTitle').innerText = isMaterial
         ? 'Antibody Complex (当前对象模型)'
         : '注册库 (当前对象模型)';
+      document.getElementById('pairHint').innerText = isMaterial
+        ? '左右同行即一对映射（物料字段 ← 对象字段）；拖动手柄对齐。批次字段已过滤，系统自动写入项不在表中。'
+        : '左右同行即一对映射；拖动手柄将源字段与当前对象字段对齐。复制方向：左侧源对象 → 右侧当前对象。';
+      bindMapInteractions();
       updateMappedCount();
     }
     function updateMappedCount() {
-      const type = document.getElementById('fieldMappingType').value;
+      const [left, right] = visibleMapBodies();
       const tip = document.getElementById('mappedCountTip');
-      if (type === 'material') {
-        tip.innerText = '已映射 13 / 17 个字段（含 4 个系统自动写入字段）';
-      } else {
-        tip.innerText = '已映射 5 / 5 个字段（右侧 CADD 等字段未映射）';
+      if (!left || !right) { tip.innerText = ''; return; }
+      const n = Math.max(left.rows.length, right.rows.length);
+      let paired = 0, leftOnly = 0, rightOnly = 0;
+      for (let i = 0; i < n; i++) {
+        const lEmpty = !left.rows[i] || left.rows[i].dataset.empty === '1';
+        const rEmpty = !right.rows[i] || right.rows[i].dataset.empty === '1';
+        if (!lEmpty && !rEmpty) paired++;
+        else if (!lEmpty && rEmpty) leftOnly++;
+        else if (lEmpty && !rEmpty) rightOnly++;
       }
+      const bits = ['已配对 ' + paired + ' 行'];
+      if (leftOnly) bits.push('左侧 ' + leftOnly + ' 个未映射');
+      if (rightOnly) bits.push('右侧 ' + rightOnly + ' 个未映射');
+      const type = document.getElementById('fieldMappingType').value;
+      if (type === 'material') bits.push('系统字段不占映射行');
+      tip.innerText = bits.join(' · ');
     }
-    // 初始化默认计数 + hash 直达
     document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('fieldMappingType').value = 'object';
+      lastMappingType = 'object';
       switchMappingType();
       const h = location.hash;
-      if (h === '#mapping-config') openFieldMapping('object');
-      else if (h === '#mapping-config-material') openFieldMapping('material');
+      if (h === '#mapping-config') openFieldMapping('object', 'none');
+      else if (h === '#mapping-config-material') openFieldMapping('material', 'none');
       else if (h === '#mapping-list') openMappingList();
+      else if (h === '#mapping-list-empty') openMappingList(true);
       else if (h === '#new-mapping') openMappingTypeSelect();
     });
-
   </script>
 </body>
 </html>
