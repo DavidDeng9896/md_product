@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <title>对象模型 - 映射关系设置原型</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
+  <style>
+    .row:hover { background-color: #f9fafb; }
+    th { white-space: nowrap; }
+    html, body { overflow-x: hidden; }
+    .modal-backdrop { overflow: hidden; }
+    .modal-backdrop > div { min-width: 0; }
+    table { table-layout: auto; }
+    .modal-backdrop { background: rgba(0,0,0,0.45); backdrop-filter: blur(2px); }
+    .focus-ring:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,0.25); }
+    .btn-primary { transition: background-color .15s; }
+    .btn-primary:hover { background-color: #2563eb; }
+    .btn-plain { transition: background-color .15s; }
+    .btn-plain:hover { background-color: #f3f4f6; }
+    .topbar { background-color: #3a6be0; }
+    .logo-box { background-color: #2f55b4; }
+    .active-main { color: #3a6be0; background: #fff; border-left: 3px solid #3a6be0; font-weight: 500; }
+    .active-sub { color: #3a6be0; background-color: #eef4ff; border-right: 2px solid #3a6be0; font-weight: 500; }
+    .menu-item { border-left: 3px solid transparent; }
+  </style>
+</head>
+<body class="bg-white text-gray-800 min-h-screen">
+
+  <!-- ===== 主内容 ===== -->
+    <main class="px-5 py-4">
+      <div class="px-1 py-2">
+        <div class="text-base font-semibold text-gray-800 mb-4">对象模型</div>
+        <div class="flex items-center gap-3 mb-4">
+          <select class="border rounded-sm px-2 py-1.5 text-sm bg-white focus-ring"><option>正常</option></select>
+          <div class="relative">
+            <input type="text" placeholder="请输入关键字" class="border rounded-sm pl-3 pr-8 py-1.5 text-sm w-56 focus-ring">
+            <i class="ri-search-line absolute right-2.5 top-2 text-gray-400 cursor-pointer"></i>
+          </div>
+          <button class="bg-blue-600 btn-primary text-white text-sm px-4 py-1.5 rounded-sm"><i class="ri-add-line mr-0.5"></i>创建</button>
+        </div>
+        <table class="w-full text-sm border-t">
+          <thead class="bg-gray-50 text-gray-600 text-left">
+            <tr>
+              <th class="p-3">对象名称</th>
+              <th class="p-3">前缀</th>
+              <th class="p-3">所属公司</th>
+              <th class="p-3">对象类型</th>
+              <th class="p-3">适用范围</th>
+              <th class="p-3">字段映射配置</th>
+              <th class="p-3">创建人</th>
+              <th class="p-3">创建时间</th>
+              <th class="p-3">修改人</th>
+              <th class="p-3">修改时间</th>
+              <th class="p-3">操作</th>
+            </tr>
+          </thead>
+          <tbody class="text-gray-700">
+            <tr class="border-b row">
+              <td class="p-3">Antibody Complex</td>
+              <td class="p-3 text-gray-500">AB</td>
+              <td class="p-3 text-gray-500">明度智云</td>
+              <td class="p-3 text-gray-500">自定义</td>
+              <td class="p-3 text-gray-500">抗体发现一部</td>
+              <td class="p-3"><span class="inline-flex items-center gap-1 text-blue-600 cursor-pointer hover:underline" onclick="openMappingList()"><span>3</span><i class="ri-edit-line text-sm"></i></span></td>
+              <td class="p-3 text-gray-500">david001</td>
+              <td class="p-3 text-gray-500">2026-01-16 16:13</td>
+              <td class="p-3 text-gray-500">david001</td>
+              <td class="p-3 text-gray-500">2026-01-16 16:13</td>
+              <td class="p-3 text-blue-600 whitespace-nowrap"><span class="cursor-pointer hover:underline">编辑</span> <span class="cursor-pointer hover:underline ml-2">停用</span> <span class="cursor-pointer hover:underline ml-2 text-red-600">删除</span></td>
+            </tr>
+            <tr class="border-b row">
+              <td class="p-3">Transfection Protein</td>
+              <td class="p-3 text-gray-500">TP</td>
+              <td class="p-3 text-gray-500">明度智云</td>
+              <td class="p-3 text-gray-500">自定义</td>
+              <td class="p-3 text-gray-500">抗体发现二部</td>
+              <td class="p-3"><span class="inline-flex items-center gap-1 text-blue-600 cursor-pointer hover:underline"><span>2</span><i class="ri-edit-line text-sm"></i></span></td>
+              <td class="p-3 text-gray-500">david001</td>
+              <td class="p-3 text-gray-500">2026-01-16 16:13</td>
+              <td class="p-3 text-gray-500">david001</td>
+              <td class="p-3 text-gray-500">2026-01-16 16:13</td>
+              <td class="p-3 text-blue-600 whitespace-nowrap"><span class="cursor-pointer hover:underline">编辑</span> <span class="cursor-pointer hover:underline ml-2">停用</span> <span class="cursor-pointer hover:underline ml-2 text-red-600">删除</span></td>
+            </tr>
+            <tr class="border-b row">
+              <td class="p-3">Cell bank</td>
+              <td class="p-3 text-gray-500">CB</td>
+              <td class="p-3 text-gray-500">明度智云</td>
+              <td class="p-3 text-gray-500">自定义</td>
+              <td class="p-3 text-gray-500">抗体发现一部，抗体发现二部</td>
+              <td class="p-3"><span class="inline-flex items-center gap-1 text-blue-600 cursor-pointer hover:underline"><span>0</span><i class="ri-edit-line text-sm"></i></span></td>
+              <td class="p-3 text-gray-500">david001</td>
+              <td class="p-3 text-gray-500">2026-01-16 16:13</td>
+              <td class="p-3 text-gray-500">david001</td>
+              <td class="p-3 text-gray-500">2026-01-16 16:13</td>
+              <td class="p-3 text-blue-600 whitespace-nowrap"><span class="cursor-pointer hover:underline">编辑</span> <span class="cursor-pointer hover:underline ml-2">停用</span> <span class="cursor-pointer hover:underline ml-2 text-red-600">删除</span></td>
+            </tr>
+            <tr class="border-b row">
+              <td class="p-3">Plasmid (DNA)</td>
+              <td class="p-3 text-gray-500">PL</td>
+              <td class="p-3 text-gray-500">明度智云</td>
+              <td class="p-3 text-gray-500">DNA</td>
+              <td class="p-3 text-gray-500">抗体发现二部</td>
+              <td class="p-3"><span class="inline-flex items-center gap-1 text-blue-600 cursor-pointer hover:underline"><span>0</span><i class="ri-edit-line text-sm"></i></span></td>
+              <td class="p-3 text-gray-500">david001</td>
+              <td class="p-3 text-gray-500">2026-01-16 16:13</td>
+              <td class="p-3 text-gray-500">david001</td>
+              <td class="p-3 text-gray-500">2026-01-16 16:13</td>
+              <td class="p-3 text-blue-600 whitespace-nowrap"><span class="cursor-pointer hover:underline">编辑</span> <span class="cursor-pointer hover:underline ml-2">停用</span> <span class="cursor-pointer hover:underline ml-2 text-red-600">删除</span></td>
+            </tr>
+            <tr class="border-b row">
+              <td class="p-3">Compound</td>
+              <td class="p-3 text-gray-500">CP</td>
+              <td class="p-3 text-gray-500">明度智云</td>
+              <td class="p-3 text-gray-500">化合物</td>
+              <td class="p-3 text-gray-500">抗体发现一部</td>
+              <td class="p-3"><span class="inline-flex items-center gap-1 text-blue-600 cursor-pointer hover:underline"><span>0</span><i class="ri-edit-line text-sm"></i></span></td>
+              <td class="p-3 text-gray-500">david001</td>
+              <td class="p-3 text-gray-500">2026-01-16 16:13</td>
+              <td class="p-3 text-gray-500">david001</td>
+              <td class="p-3 text-gray-500">2026-01-16 16:13</td>
+              <td class="p-3 text-blue-600 whitespace-nowrap"><span class="cursor-pointer hover:underline">编辑</span> <span class="cursor-pointer hover:underline ml-2">停用</span> <span class="cursor-pointer hover:underline ml-2 text-red-600">删除</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <!-- ===== Modal 1: 映射关系设置 ===== -->
+  <div id="mappingListModal" class="fixed inset-0 modal-backdrop hidden items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-xl w-[1080px] max-w-[95vw] max-h-[85vh] flex flex-col">
+      <div class="flex items-center justify-between px-5 py-3 border-b shrink-0">
+        <div class="font-medium">映射关系设置 <span class="text-xs text-gray-400 ml-2">Antibody Complex</span></div>
+        <button class="text-gray-400 hover:text-gray-600" onclick="closeAll()"><i class="ri-close-line text-lg"></i></button>
+      </div>
+      <div class="p-5 overflow-y-auto overflow-x-hidden flex-1">
+        <div class="flex items-center justify-between mb-3">
+          <div class="text-sm text-gray-500">同一对象可配置多套映射关系<br>（对象模型映射、对象与物料信息映射可并存）</div>
+          <button class="bg-blue-600 btn-primary text-white text-sm px-3 py-1.5 rounded-md" onclick="openMappingTypeSelect()"><i class="ri-add-line mr-0.5"></i>新增</button>
+        </div>
+        <table class="w-full text-sm border rounded-md overflow-hidden">
+          <thead class="bg-gray-50 text-left text-gray-600">
+            <tr>
+              <th class="p-3">映射关系</th>
+              <th class="p-3">映射对象</th>
+              <th class="p-3">映射数量</th>
+              <th class="p-3">备注</th>
+              <th class="p-3 whitespace-nowrap">创建人/创建时间</th>
+              <th class="p-3 whitespace-nowrap">修改人/修改时间</th>
+              <th class="p-3">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-t row">
+              <td class="p-3 whitespace-nowrap"><span class="inline-block px-2 py-0.5 rounded text-xs bg-blue-50 text-blue-600 font-medium">对象模型映射</span></td>
+              <td class="p-3 text-gray-600">源对象：注册库 → 当前对象</td>
+              <td class="p-3 text-gray-600">5</td>
+              <td class="p-3 text-gray-500">将参考库复制到注册库</td>
+              <td class="p-3 text-xs text-gray-400 leading-5">david001<br>2026-01-16 16:13</td>
+              <td class="p-3 text-xs text-gray-400 leading-5">david001<br>2026-01-16 16:13</td>
+              <td class="p-3 text-blue-600 whitespace-nowrap"><span class="cursor-pointer hover:underline" onclick="openFieldMapping('object')">设置</span> <span class="cursor-pointer hover:underline ml-3 text-red-600">删除</span></td>
+            </tr>
+            <tr class="border-t row">
+              <td class="p-3 whitespace-nowrap"><span class="inline-block px-2 py-0.5 rounded text-xs bg-emerald-50 text-emerald-600 font-medium">对象与物料信息映射</span></td>
+              <td class="p-3 text-gray-600">物料类型：实验产物（普通物料）</td>
+              <td class="p-3 text-gray-600">13</td>
+              <td class="p-3 text-gray-500">实验中产出的样品同步注册</td>
+              <td class="p-3 text-xs text-gray-400 leading-5">david001<br>2026-01-16 16:13</td>
+              <td class="p-3 text-xs text-gray-400 leading-5">david001<br>2026-01-16 16:13</td>
+              <td class="p-3 text-blue-600 whitespace-nowrap"><span class="cursor-pointer hover:underline" onclick="openFieldMapping('material')">设置</span> <span class="cursor-pointer hover:underline ml-3 text-red-600">删除</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Modal 2: 新增映射 ===== -->
+  <div id="mappingTypeModal" class="fixed inset-0 modal-backdrop hidden items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-xl w-[440px]">
+      <div class="flex items-center justify-between px-5 py-3 border-b">
+        <div class="font-medium">新增映射</div>
+        <button class="text-gray-400 hover:text-gray-600" onclick="closeAll()"><i class="ri-close-line text-lg"></i></button>
+      </div>
+      <div class="p-5">
+        <label class="block text-sm text-gray-600 mb-1.5"><span class="text-red-500 mr-0.5">*</span>映射关系</label>
+        <select id="newMappingType" class="w-full border rounded-md px-2 py-1.5 mb-1 focus-ring bg-white" onchange="onMappingTypeChange()">
+          <option value="">请选择</option>
+          <option value="object">对象模型映射</option>
+          <option value="material">对象与物料信息映射</option>
+        </select>
+        <div id="mappingTypeError" class="hidden text-xs text-red-500 mb-3"><i class="ri-error-warning-line"></i> 请选择映射关系</div>
+        <div id="objectTargetBox" class="hidden mb-3">
+          <label class="block text-sm text-gray-600 mb-1.5"><span class="text-red-500 mr-0.5">*</span>源对象</label>
+          <select class="w-full border rounded-md px-2 py-1.5 focus-ring bg-white"><option>注册库</option><option>参考库</option></select>
+        </div>
+        <div id="materialTypeBox" class="hidden mb-3">
+          <label class="block text-sm text-gray-600 mb-1.5"><span class="text-red-500 mr-0.5">*</span>物料类型</label>
+          <select class="w-full border rounded-md px-2 py-1.5 focus-ring bg-white">
+            <option>实验产物（普通物料）</option>
+            <option>细胞株库（细胞）</option>
+          </select>
+          <div class="text-xs text-gray-400 mt-1.5">仅显示"已发布 + 启用"且未被其他对象绑定的物料类型</div>
+        </div>
+        <div class="flex justify-end gap-2 mt-5">
+          <button class="border btn-plain px-4 py-1.5 rounded-md text-sm text-gray-600" onclick="closeAll()">取消</button>
+          <button class="bg-blue-600 btn-primary text-white px-4 py-1.5 rounded-md text-sm" onclick="goNextStep()">下一步</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<!-- ===== Modal 3: 映射关系设置（左右字段对照） ===== -->
+  <div id="fieldMappingModal" class="fixed inset-0 modal-backdrop hidden items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-xl w-[1150px] max-w-[95vw] max-h-[90vh] flex flex-col">
+      <div class="flex items-center justify-between px-5 py-3.5 border-b shrink-0">
+        <div class="font-medium">映射关系设置</div>
+        <button class="text-gray-400 hover:text-gray-600" onclick="closeAll()"><i class="ri-close-line text-lg"></i></button>
+      </div>
+      <div class="p-5 overflow-y-auto overflow-x-hidden flex-1">
+        <!-- 表单区：映射关系 + 备注 -->
+        <div class="grid grid-cols-2 gap-6 mb-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">映射关系</label>
+            <select id="fieldMappingType" class="w-full border border-gray-300 rounded-md px-3 py-2.5 focus-ring bg-white" onchange="switchMappingType()">
+              <option value="object">对象模型映射</option>
+              <option value="material">对象与物料信息映射</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">备注</label>
+            <input id="mappingRemark" type="text" value="antibody_metadata" class="w-full border border-gray-300 rounded-md px-3 py-2.5 focus-ring bg-white">
+          </div>
+        </div>
+        <!-- 表单区：源（左） / 当前对象模型（右） -->
+        <div class="grid grid-cols-2 gap-6">
+          <select id="sourceSelect" class="w-full border border-gray-300 rounded-md px-3 py-2.5 focus-ring bg-white"></select>
+          <div class="flex items-center px-1 text-[15px] font-medium text-gray-800 whitespace-nowrap overflow-hidden text-ellipsis" id="rightPaneTitle">注册库 (当前对象模型)</div>
+        </div>
+
+        <!-- 系统写入提示（物料映射时显示） -->
+        <div id="autoWriteTip" class="hidden items-start gap-2 bg-blue-50 text-blue-700 text-sm px-4 py-3 rounded-md mb-4">
+          <i class="ri-information-line mt-0.5"></i>
+          <span><span class="font-medium">系统自动写入：</span>物料编号（自动生成，可改）、注册数据（自动指向源对象实体）、计量单位/计量小数位（按物料类型自动带出）。以上字段无需配置映射。</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-6">
+          <!-- 对象模型映射：左（源对象字段） -->
+          <table id="leftObjectTable" class="w-full text-sm border rounded-md overflow-hidden hidden">
+            <thead class="bg-gray-50 text-left text-gray-600">
+              <tr><th class="p-3 w-10"></th><th class="p-3">名称</th><th class="p-3">字段类型</th></tr>
+            </thead>
+            <tbody class="text-gray-700">
+              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">Structure</td><td class="p-3 pl-3.5 text-gray-500">structure</td></tr>
+              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">SMILES</td><td class="p-3 pl-3.5 text-gray-500">smiles</td></tr>
+              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">CAS</td><td class="p-3 pl-3.5 text-gray-500">cas</td></tr>
+              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">分子式 (MF)</td><td class="p-3 pl-3.5 text-gray-500">mf</td></tr>
+              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">分子量 (MW)</td><td class="p-3 pl-3.5 text-gray-500">full_aa_sequence</td></tr>
+            </tbody>
+          </table>
+          <!-- 对象模型映射：右（当前对象模型字段） -->
+          <table id="rightObjectTable" class="w-full text-sm border rounded-md overflow-hidden hidden">
+            <thead class="bg-gray-50 text-left text-gray-600">
+              <tr><th class="p-3 w-10"></th><th class="p-3">名称</th><th class="p-3">字段类型</th></tr>
+            </thead>
+            <tbody class="text-gray-700">
+              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">Structure</td><td class="p-3 pl-3.5 text-gray-500">structure</td></tr>
+              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">SMILES</td><td class="p-3 pl-3.5 text-gray-500">smiles</td></tr>
+              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">CADD</td><td class="p-3 pl-3.5 text-gray-500">cadd</td></tr>
+              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">分子式 (MF)</td><td class="p-3 pl-3.5 text-gray-500">mf</td></tr>
+              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">分子量 (MW)</td><td class="p-3 pl-3.5 text-gray-500">full_aa_sequence</td></tr>
+            </tbody>
+          </table>
+
+          <!-- 对象与物料信息映射：左（物料类型字段） -->
+          <table id="leftMaterialTable" class="w-full text-sm border rounded-md overflow-hidden">
+            <thead class="bg-gray-50 text-left text-gray-600">
+              <tr><th class="p-3 w-10"></th><th class="p-3">名称</th><th class="p-3">字段类型</th></tr>
+            </thead>
+            <tbody class="text-gray-700">
+              <tr class="border-t row bg-blue-50/40"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable"></i></td><td class="p-3 pl-3.5 text-blue-600"><i class="ri-robot-line mr-1"></i>物料编号（系统自动写入）</td><td class="p-3 pl-3.5 text-gray-500">特殊</td></tr>
+              <tr class="border-t row bg-blue-50/40"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable"></i></td><td class="p-3 pl-3.5 text-blue-600"><i class="ri-robot-line mr-1"></i>注册数据（系统自动写入）</td><td class="p-3 pl-3.5 text-gray-500">特殊</td></tr>
+              <tr class="border-t row bg-blue-50/40"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable"></i></td><td class="p-3 pl-3.5 text-blue-600"><i class="ri-robot-line mr-1"></i>计量单位（系统自动写入）</td><td class="p-3 pl-3.5 text-gray-500">特殊</td></tr>
+              <tr class="border-t row bg-blue-50/40"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable"></i></td><td class="p-3 pl-3.5 text-blue-600"><i class="ri-robot-line mr-1"></i>计量小数位（系统自动写入）</td><td class="p-3 pl-3.5 text-gray-500">特殊</td></tr>
+              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">物料名称</td><td class="p-3 pl-3.5 text-gray-500">文本</td></tr>
+              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">别名</td><td class="p-3 pl-3.5 text-gray-500">文本</td></tr>
+              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">规格型号</td><td class="p-3 pl-3.5 text-gray-500">文本</td></tr>
+              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">浓度</td><td class="p-3 pl-3.5 text-gray-500">数值</td></tr>
+              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">纯度</td><td class="p-3 pl-3.5 text-gray-500">数值</td></tr>
+              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">含量</td><td class="p-3 pl-3.5 text-gray-500">数值</td></tr>
+              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">生产厂家</td><td class="p-3 pl-3.5 text-gray-500">列表</td></tr>
+              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">级别</td><td class="p-3 pl-3.5 text-gray-500">文本</td></tr>
+              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">储存条件</td><td class="p-3 pl-3.5 text-gray-500">下拉选择框</td></tr>
+              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">危险特性</td><td class="p-3 pl-3.5 text-gray-500">复选框</td></tr>
+              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">是否低温保存</td><td class="p-3 pl-3.5 text-gray-500">开关按钮</td></tr>
+              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">MSDS 文件</td><td class="p-3 pl-3.5 text-gray-500">上传</td></tr>
+              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">备注</td><td class="p-3 pl-3.5 text-gray-500">多行文本</td></tr>
+            </tbody>
+          </table>
+          <!-- 对象与物料信息映射：右（当前对象模型字段） -->
+          <table id="rightMaterialTable" class="w-full text-sm border rounded-md overflow-hidden">
+            <thead class="bg-gray-50 text-left text-gray-600">
+              <tr><th class="p-3 w-10"></th><th class="p-3">名称</th><th class="p-3">字段类型</th></tr>
+            </thead>
+            <tbody class="text-gray-700">
+              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">名称</td><td class="p-3 pl-3.5 text-gray-500">文本</td></tr>
+              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">编号</td><td class="p-3 pl-3.5 text-gray-500">文本</td></tr>
+              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">别名</td><td class="p-3 pl-3.5 text-gray-500">文本</td></tr>
+              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">规格</td><td class="p-3 pl-3.5 text-gray-500">文本</td></tr>
+              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">浓度</td><td class="p-3 pl-3.5 text-gray-500">数值</td></tr>
+              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">纯度</td><td class="p-3 pl-3.5 text-gray-500">数值</td></tr>
+              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">含量</td><td class="p-3 pl-3.5 text-gray-500">数值</td></tr>
+              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">厂家</td><td class="p-3 pl-3.5 text-gray-500">列表</td></tr>
+              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">物料级别</td><td class="p-3 pl-3.5 text-gray-500">文本</td></tr>
+              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">储存条件</td><td class="p-3 pl-3.5 text-gray-500">下拉选择框</td></tr>
+              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">危险特性</td><td class="p-3 pl-3.5 text-gray-500">复选框</td></tr>
+              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">是否低温保存</td><td class="p-3 pl-3.5 text-gray-500">开关按钮</td></tr>
+              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">MSDS 文件</td><td class="p-3 pl-3.5 text-gray-500">上传</td></tr>
+              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">备注</td><td class="p-3 pl-3.5 text-gray-500">多行文本</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div id="batchFilterTip" class="hidden flex items-center gap-1.5 text-xs text-gray-400 mt-3"><i class="ri-filter-3-line"></i>批次信息字段已过滤，不参与映射。</div>
+      </div>
+      <div class="border-t px-5 py-3 flex items-center justify-between shrink-0">
+        <div class="text-xs text-gray-400" id="mappedCountTip"></div>
+        <div class="flex gap-2">
+          <button class="border btn-plain px-4 py-1.5 rounded-md text-sm text-gray-600" onclick="closeAll()">取消</button>
+          <button class="bg-blue-600 btn-primary text-white px-4 py-1.5 rounded-md text-sm" onclick="closeAll()">确认</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function showModal(id) {
+      document.getElementById(id).classList.remove('hidden');
+      document.getElementById(id).classList.add('flex');
+    }
+    function hideModal(id) {
+      document.getElementById(id).classList.add('hidden');
+      document.getElementById(id).classList.remove('flex');
+    }
+    function closeAll() {
+      ['mappingListModal', 'mappingTypeModal', 'fieldMappingModal'].forEach(hideModal);
+    }
+    function openMappingList() {
+      closeAll();
+      showModal('mappingListModal');
+    }
+    function openMappingTypeSelect() {
+      document.getElementById('mappingTypeError').classList.add('hidden');
+      showModal('mappingTypeModal');
+    }
+    function onMappingTypeChange() {
+      const v = document.getElementById('newMappingType').value;
+      document.getElementById('mappingTypeError').classList.add('hidden');
+      document.getElementById('objectTargetBox').classList.toggle('hidden', v !== 'object');
+      document.getElementById('materialTypeBox').classList.toggle('hidden', v !== 'material');
+    }
+    function goNextStep() {
+      const v = document.getElementById('newMappingType').value;
+      if (!v) {
+        document.getElementById('mappingTypeError').classList.remove('hidden');
+        return;
+      }
+      closeAll();
+      openFieldMapping(v);
+    }
+function openFieldMapping(type) {
+      closeAll();
+      document.getElementById('fieldMappingType').value = type || 'material';
+      switchMappingType();
+      showModal('fieldMappingModal');
+    }
+    function switchMappingType() {
+      const type = document.getElementById('fieldMappingType').value;
+      const isMaterial = type === 'material';
+      document.getElementById('leftObjectTable').classList.toggle('hidden', isMaterial);
+      document.getElementById('rightObjectTable').classList.toggle('hidden', isMaterial);
+      document.getElementById('leftMaterialTable').classList.toggle('hidden', !isMaterial);
+      document.getElementById('rightMaterialTable').classList.toggle('hidden', !isMaterial);
+      document.getElementById('autoWriteTip').classList.toggle('hidden', !isMaterial);
+      document.getElementById('autoWriteTip').classList.toggle('flex', isMaterial);
+      document.getElementById('batchFilterTip').classList.toggle('hidden', !isMaterial);
+      document.getElementById('batchFilterTip').classList.toggle('flex', isMaterial);
+      document.getElementById('sourceSelect').innerHTML = isMaterial
+        ? '<option>实验产物（普通物料）</option><option>细胞株库（细胞）</option>'
+        : '<option>设计库</option><option>参考库</option>';
+      document.getElementById('rightPaneTitle').innerText = isMaterial
+        ? 'Antibody Complex (当前对象模型)'
+        : '注册库 (当前对象模型)';
+      updateMappedCount();
+    }
+    function updateMappedCount() {
+      const type = document.getElementById('fieldMappingType').value;
+      const tip = document.getElementById('mappedCountTip');
+      if (type === 'material') {
+        tip.innerText = '已映射 13 / 17 个字段（含 4 个系统自动写入字段）';
+      } else {
+        tip.innerText = '已映射 5 / 5 个字段（右侧 CADD 等字段未映射）';
+      }
+    }
+    // 初始化默认计数 + hash 直达
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('fieldMappingType').value = 'material';
+      switchMappingType();
+      const h = location.hash;
+      if (h === '#mapping-config') openFieldMapping('object');
+      else if (h === '#mapping-config-material') openFieldMapping('material');
+      else if (h === '#mapping-list') openMappingList();
+      else if (h === '#new-mapping') openMappingTypeSelect();
+    });
+
+  </script>
+</body>
+</html>
