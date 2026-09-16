@@ -8,14 +8,14 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
   <style>
-    .row:hover { background-color: #f9fafb; }
+    .row:hover { background-color: #fafafa; }
     th { white-space: nowrap; }
     html, body { overflow-x: hidden; }
     .modal-backdrop { overflow: hidden; }
     .modal-backdrop > div { min-width: 0; }
     table { table-layout: auto; }
-    .modal-backdrop { background: rgba(0,0,0,0.45); backdrop-filter: blur(2px); }
-    .focus-ring:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,0.25); }
+    .modal-backdrop { background: rgba(0,0,0,0.45); }
+    .focus-ring:focus { outline: none; border-color: #4096ff; box-shadow: 0 0 0 2px rgba(5,145,255,0.12); }
     .btn-primary { transition: background-color .15s; }
     .btn-primary:hover { background-color: #2563eb; }
     .btn-plain { transition: background-color .15s; }
@@ -25,6 +25,64 @@
     .active-main { color: #3a6be0; background: #fff; border-left: 3px solid #3a6be0; font-weight: 500; }
     .active-sub { color: #3a6be0; background-color: #eef4ff; border-right: 2px solid #3a6be0; font-weight: 500; }
     .menu-item { border-left: 3px solid transparent; }
+
+    /* 贴近真实系统：Ant Design 风格控件 + 左右分栏对照表 */
+    .ant-ctrl {
+      height: 32px;
+      width: 100%;
+      border: 1px solid #d9d9d9;
+      border-radius: 6px;
+      padding: 0 11px;
+      font-size: 14px;
+      line-height: 32px;
+      background: #fff;
+      color: rgba(0,0,0,.88);
+    }
+    .ant-ctrl:hover { border-color: #4096ff; }
+    .form-label {
+      display: block;
+      font-size: 14px;
+      color: rgba(0,0,0,.88);
+      margin-bottom: 8px;
+    }
+    .field-map-title {
+      height: 32px;
+      display: flex;
+      align-items: center;
+      font-size: 14px;
+      color: rgba(0,0,0,.88);
+    }
+    .map-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    .map-table th {
+      background: #fafafa;
+      font-weight: 500;
+      color: rgba(0,0,0,.88);
+      padding: 12px 16px;
+      border-bottom: 1px solid #f0f0f0;
+      text-align: left;
+    }
+    .map-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .map-table th:first-child,
+    .map-table td:first-child {
+      width: 40px;
+      padding-left: 16px;
+      padding-right: 0;
+      color: #bfbfbf;
+    }
+    .map-table td:last-child { color: rgba(0,0,0,.45); }
+    .map-split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+    .map-pane { min-width: 0; }
+    .map-pane + .map-pane { border-left: 1px solid #f0f0f0; }
   </style>
 </head>
 <body class="bg-white text-gray-800 min-h-screen">
@@ -213,125 +271,115 @@
     </div>
   </div>
 
-<!-- ===== Modal 3: 映射关系设置（左右字段对照） ===== -->
+<!-- ===== Modal 3: 映射关系设置（左右字段对照，贴近真实系统） ===== -->
   <div id="fieldMappingModal" class="fixed inset-0 modal-backdrop hidden items-center justify-center z-50">
-    <div class="bg-white rounded-lg shadow-xl w-[1150px] max-w-[95vw] max-h-[90vh] flex flex-col">
-      <div class="flex items-center justify-between px-5 py-3.5 border-b shrink-0">
-        <div class="font-medium">映射关系设置</div>
-        <button class="text-gray-400 hover:text-gray-600" onclick="closeAll()"><i class="ri-close-line text-lg"></i></button>
+    <div class="bg-white rounded-lg shadow-xl w-[920px] max-w-[95vw] max-h-[90vh] flex flex-col">
+      <div class="flex items-center justify-between px-6 py-3 border-b border-[#f0f0f0] shrink-0">
+        <div class="text-[16px] font-medium text-[rgba(0,0,0,.88)]">映射关系设置</div>
+        <button class="text-[rgba(0,0,0,.45)] hover:text-[rgba(0,0,0,.88)] leading-none" onclick="closeAll()"><i class="ri-close-line text-[18px]"></i></button>
       </div>
-      <div class="p-5 overflow-y-auto overflow-x-hidden flex-1">
-        <!-- 表单区：映射关系 + 备注 -->
-        <div class="grid grid-cols-2 gap-6 mb-4">
+      <div class="px-6 pt-5 pb-2 overflow-y-auto overflow-x-hidden flex-1">
+        <div class="grid grid-cols-2 gap-x-6">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">映射关系</label>
-            <select id="fieldMappingType" class="w-full border border-gray-300 rounded-md px-3 py-2.5 focus-ring bg-white" onchange="switchMappingType()">
+            <label class="form-label">映射关系</label>
+            <select id="fieldMappingType" class="ant-ctrl focus-ring" onchange="switchMappingType()">
               <option value="object">对象模型映射</option>
               <option value="material">对象与物料信息映射</option>
             </select>
+            <select id="sourceSelect" class="ant-ctrl focus-ring mt-4"></select>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">备注</label>
-            <input id="mappingRemark" type="text" value="antibody_metadata" class="w-full border border-gray-300 rounded-md px-3 py-2.5 focus-ring bg-white">
+            <label class="form-label">备注</label>
+            <input id="mappingRemark" type="text" value="antibody_metadata" class="ant-ctrl focus-ring">
+            <div class="field-map-title whitespace-nowrap overflow-hidden text-ellipsis mt-4" id="rightPaneTitle">注册库 (当前对象模型)</div>
+          </div>
+
+          <div id="autoWriteTip" class="hidden col-span-2 items-start gap-2 bg-blue-50 text-blue-700 text-sm px-4 py-2.5 rounded-md mt-3">
+            <i class="ri-information-line mt-0.5"></i>
+            <span><span class="font-medium">系统自动写入：</span>物料编号（自动生成，可改）、注册数据（自动指向源对象实体）、计量单位/计量小数位（按物料类型自动带出）。以上字段无需配置映射。</span>
+          </div>
+
+          <div class="min-w-0 mt-2">
+            <table id="leftObjectTable" class="map-table">
+              <thead>
+                <tr><th></th><th>名称</th><th>字段类型</th></tr>
+              </thead>
+              <tbody>
+                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>Structure</td><td>structure</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>SMILES</td><td>smiles</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>CAS</td><td>cas</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>分子式 (MF)</td><td>mf</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>分子量 (MW)</td><td>full_aa_sequence</td></tr>
+              </tbody>
+            </table>
+            <table id="leftMaterialTable" class="map-table hidden">
+              <thead>
+                <tr><th></th><th>名称</th><th>字段类型</th></tr>
+              </thead>
+              <tbody>
+                <tr class="row bg-blue-50/40"><td><i class="ri-draggable"></i></td><td class="text-blue-600"><i class="ri-robot-line mr-1"></i>物料编号（系统自动写入）</td><td>特殊</td></tr>
+                <tr class="row bg-blue-50/40"><td><i class="ri-draggable"></i></td><td class="text-blue-600"><i class="ri-robot-line mr-1"></i>注册数据（系统自动写入）</td><td>特殊</td></tr>
+                <tr class="row bg-blue-50/40"><td><i class="ri-draggable"></i></td><td class="text-blue-600"><i class="ri-robot-line mr-1"></i>计量单位（系统自动写入）</td><td>特殊</td></tr>
+                <tr class="row bg-blue-50/40"><td><i class="ri-draggable"></i></td><td class="text-blue-600"><i class="ri-robot-line mr-1"></i>计量小数位（系统自动写入）</td><td>特殊</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>物料名称</td><td>文本</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>别名</td><td>文本</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>规格型号</td><td>文本</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>浓度</td><td>数值</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>纯度</td><td>数值</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>含量</td><td>数值</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>生产厂家</td><td>列表</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>级别</td><td>文本</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>储存条件</td><td>下拉选择框</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>危险特性</td><td>复选框</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>是否低温保存</td><td>开关按钮</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>MSDS 文件</td><td>上传</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>备注</td><td>多行文本</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="min-w-0 mt-2">
+            <table id="rightObjectTable" class="map-table">
+              <thead>
+                <tr><th></th><th>名称</th><th>字段类型</th></tr>
+              </thead>
+              <tbody>
+                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>Structure</td><td>structure</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>SMILES</td><td>smiles</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>CADD</td><td>cadd</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>分子式 (MF)</td><td>mf</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>分子量 (MW)</td><td>full_aa_sequence</td></tr>
+              </tbody>
+            </table>
+            <table id="rightMaterialTable" class="map-table hidden">
+              <thead>
+                <tr><th></th><th>名称</th><th>字段类型</th></tr>
+              </thead>
+              <tbody>
+                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>名称</td><td>文本</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>编号</td><td>文本</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>别名</td><td>文本</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>规格</td><td>文本</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>浓度</td><td>数值</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>纯度</td><td>数值</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>含量</td><td>数值</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>厂家</td><td>列表</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>物料级别</td><td>文本</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>储存条件</td><td>下拉选择框</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>危险特性</td><td>复选框</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>是否低温保存</td><td>开关按钮</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>MSDS 文件</td><td>上传</td></tr>
+                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>备注</td><td>多行文本</td></tr>
+              </tbody>
+            </table>
           </div>
         </div>
-        <!-- 表单区：源（左） / 当前对象模型（右） -->
-        <div class="grid grid-cols-2 gap-6">
-          <select id="sourceSelect" class="w-full border border-gray-300 rounded-md px-3 py-2.5 focus-ring bg-white"></select>
-          <div class="flex items-center px-1 text-[15px] font-medium text-gray-800 whitespace-nowrap overflow-hidden text-ellipsis" id="rightPaneTitle">注册库 (当前对象模型)</div>
-        </div>
 
-        <!-- 系统写入提示（物料映射时显示） -->
-        <div id="autoWriteTip" class="hidden items-start gap-2 bg-blue-50 text-blue-700 text-sm px-4 py-3 rounded-md mb-4">
-          <i class="ri-information-line mt-0.5"></i>
-          <span><span class="font-medium">系统自动写入：</span>物料编号（自动生成，可改）、注册数据（自动指向源对象实体）、计量单位/计量小数位（按物料类型自动带出）。以上字段无需配置映射。</span>
-        </div>
-
-        <div class="grid grid-cols-2 gap-6">
-          <!-- 对象模型映射：左（源对象字段） -->
-          <table id="leftObjectTable" class="w-full text-sm border rounded-md overflow-hidden hidden">
-            <thead class="bg-gray-50 text-left text-gray-600">
-              <tr><th class="p-3 w-10"></th><th class="p-3">名称</th><th class="p-3">字段类型</th></tr>
-            </thead>
-            <tbody class="text-gray-700">
-              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">Structure</td><td class="p-3 pl-3.5 text-gray-500">structure</td></tr>
-              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">SMILES</td><td class="p-3 pl-3.5 text-gray-500">smiles</td></tr>
-              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">CAS</td><td class="p-3 pl-3.5 text-gray-500">cas</td></tr>
-              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">分子式 (MF)</td><td class="p-3 pl-3.5 text-gray-500">mf</td></tr>
-              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">分子量 (MW)</td><td class="p-3 pl-3.5 text-gray-500">full_aa_sequence</td></tr>
-            </tbody>
-          </table>
-          <!-- 对象模型映射：右（当前对象模型字段） -->
-          <table id="rightObjectTable" class="w-full text-sm border rounded-md overflow-hidden hidden">
-            <thead class="bg-gray-50 text-left text-gray-600">
-              <tr><th class="p-3 w-10"></th><th class="p-3">名称</th><th class="p-3">字段类型</th></tr>
-            </thead>
-            <tbody class="text-gray-700">
-              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">Structure</td><td class="p-3 pl-3.5 text-gray-500">structure</td></tr>
-              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">SMILES</td><td class="p-3 pl-3.5 text-gray-500">smiles</td></tr>
-              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">CADD</td><td class="p-3 pl-3.5 text-gray-500">cadd</td></tr>
-              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">分子式 (MF)</td><td class="p-3 pl-3.5 text-gray-500">mf</td></tr>
-              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">分子量 (MW)</td><td class="p-3 pl-3.5 text-gray-500">full_aa_sequence</td></tr>
-            </tbody>
-          </table>
-
-          <!-- 对象与物料信息映射：左（物料类型字段） -->
-          <table id="leftMaterialTable" class="w-full text-sm border rounded-md overflow-hidden">
-            <thead class="bg-gray-50 text-left text-gray-600">
-              <tr><th class="p-3 w-10"></th><th class="p-3">名称</th><th class="p-3">字段类型</th></tr>
-            </thead>
-            <tbody class="text-gray-700">
-              <tr class="border-t row bg-blue-50/40"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable"></i></td><td class="p-3 pl-3.5 text-blue-600"><i class="ri-robot-line mr-1"></i>物料编号（系统自动写入）</td><td class="p-3 pl-3.5 text-gray-500">特殊</td></tr>
-              <tr class="border-t row bg-blue-50/40"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable"></i></td><td class="p-3 pl-3.5 text-blue-600"><i class="ri-robot-line mr-1"></i>注册数据（系统自动写入）</td><td class="p-3 pl-3.5 text-gray-500">特殊</td></tr>
-              <tr class="border-t row bg-blue-50/40"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable"></i></td><td class="p-3 pl-3.5 text-blue-600"><i class="ri-robot-line mr-1"></i>计量单位（系统自动写入）</td><td class="p-3 pl-3.5 text-gray-500">特殊</td></tr>
-              <tr class="border-t row bg-blue-50/40"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable"></i></td><td class="p-3 pl-3.5 text-blue-600"><i class="ri-robot-line mr-1"></i>计量小数位（系统自动写入）</td><td class="p-3 pl-3.5 text-gray-500">特殊</td></tr>
-              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">物料名称</td><td class="p-3 pl-3.5 text-gray-500">文本</td></tr>
-              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">别名</td><td class="p-3 pl-3.5 text-gray-500">文本</td></tr>
-              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">规格型号</td><td class="p-3 pl-3.5 text-gray-500">文本</td></tr>
-              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">浓度</td><td class="p-3 pl-3.5 text-gray-500">数值</td></tr>
-              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">纯度</td><td class="p-3 pl-3.5 text-gray-500">数值</td></tr>
-              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">含量</td><td class="p-3 pl-3.5 text-gray-500">数值</td></tr>
-              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">生产厂家</td><td class="p-3 pl-3.5 text-gray-500">列表</td></tr>
-              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">级别</td><td class="p-3 pl-3.5 text-gray-500">文本</td></tr>
-              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">储存条件</td><td class="p-3 pl-3.5 text-gray-500">下拉选择框</td></tr>
-              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">危险特性</td><td class="p-3 pl-3.5 text-gray-500">复选框</td></tr>
-              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">是否低温保存</td><td class="p-3 pl-3.5 text-gray-500">开关按钮</td></tr>
-              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">MSDS 文件</td><td class="p-3 pl-3.5 text-gray-500">上传</td></tr>
-              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">备注</td><td class="p-3 pl-3.5 text-gray-500">多行文本</td></tr>
-            </tbody>
-          </table>
-          <!-- 对象与物料信息映射：右（当前对象模型字段） -->
-          <table id="rightMaterialTable" class="w-full text-sm border rounded-md overflow-hidden">
-            <thead class="bg-gray-50 text-left text-gray-600">
-              <tr><th class="p-3 w-10"></th><th class="p-3">名称</th><th class="p-3">字段类型</th></tr>
-            </thead>
-            <tbody class="text-gray-700">
-              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">名称</td><td class="p-3 pl-3.5 text-gray-500">文本</td></tr>
-              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">编号</td><td class="p-3 pl-3.5 text-gray-500">文本</td></tr>
-              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">别名</td><td class="p-3 pl-3.5 text-gray-500">文本</td></tr>
-              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">规格</td><td class="p-3 pl-3.5 text-gray-500">文本</td></tr>
-              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">浓度</td><td class="p-3 pl-3.5 text-gray-500">数值</td></tr>
-              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">纯度</td><td class="p-3 pl-3.5 text-gray-500">数值</td></tr>
-              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">含量</td><td class="p-3 pl-3.5 text-gray-500">数值</td></tr>
-              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">厂家</td><td class="p-3 pl-3.5 text-gray-500">列表</td></tr>
-              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">物料级别</td><td class="p-3 pl-3.5 text-gray-500">文本</td></tr>
-              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">储存条件</td><td class="p-3 pl-3.5 text-gray-500">下拉选择框</td></tr>
-              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">危险特性</td><td class="p-3 pl-3.5 text-gray-500">复选框</td></tr>
-              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">是否低温保存</td><td class="p-3 pl-3.5 text-gray-500">开关按钮</td></tr>
-              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">MSDS 文件</td><td class="p-3 pl-3.5 text-gray-500">上传</td></tr>
-              <tr class="border-t row"><td class="p-3 pl-3.5 text-gray-300"><i class="ri-draggable cursor-grab"></i></td><td class="p-3 pl-3.5">备注</td><td class="p-3 pl-3.5 text-gray-500">多行文本</td></tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div id="batchFilterTip" class="hidden flex items-center gap-1.5 text-xs text-gray-400 mt-3"><i class="ri-filter-3-line"></i>批次信息字段已过滤，不参与映射。</div>
+        <div id="batchFilterTip" class="hidden items-center gap-1.5 text-xs text-gray-400 mt-3"><i class="ri-filter-3-line"></i>批次信息字段已过滤，不参与映射。</div>
       </div>
-      <div class="border-t px-5 py-3 flex items-center justify-between shrink-0">
-        <div class="text-xs text-gray-400" id="mappedCountTip"></div>
-        <div class="flex gap-2">
-          <button class="border btn-plain px-4 py-1.5 rounded-md text-sm text-gray-600" onclick="closeAll()">取消</button>
-          <button class="bg-blue-600 btn-primary text-white px-4 py-1.5 rounded-md text-sm" onclick="closeAll()">确认</button>
-        </div>
+      <div class="border-t border-[#f0f0f0] px-6 py-2.5 flex items-center justify-end gap-2 shrink-0">
+        <div class="text-xs text-gray-400 mr-auto" id="mappedCountTip"></div>
+        <button class="border border-[#d9d9d9] btn-plain px-4 h-8 rounded-md text-sm text-[rgba(0,0,0,.88)]" onclick="closeAll()">取消</button>
+        <button class="bg-[#1677ff] btn-primary text-white px-4 h-8 rounded-md text-sm" onclick="closeAll()">确认</button>
       </div>
     </div>
   </div>
@@ -373,7 +421,7 @@
     }
 function openFieldMapping(type) {
       closeAll();
-      document.getElementById('fieldMappingType').value = type || 'material';
+      document.getElementById('fieldMappingType').value = type || 'object';
       switchMappingType();
       showModal('fieldMappingModal');
     }
@@ -407,7 +455,7 @@ function openFieldMapping(type) {
     }
     // 初始化默认计数 + hash 直达
     document.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('fieldMappingType').value = 'material';
+      document.getElementById('fieldMappingType').value = 'object';
       switchMappingType();
       const h = location.hash;
       if (h === '#mapping-config') openFieldMapping('object');
