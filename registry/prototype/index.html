@@ -132,6 +132,10 @@
       overflow-y: auto;
     }
     .dd-option {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
       padding: 7px 12px;
       font-size: 14px;
       color: rgba(0,0,0,.88);
@@ -140,6 +144,9 @@
     .dd-option:hover { background: #f5f5f5; }
     .dd-option.is-selected { color: #1677ff; background: #e6f4ff; }
     .dd-option.is-disabled { color: rgba(0,0,0,.25); cursor: not-allowed; }
+    .dd-hint { font-size: 12px; color: rgba(0,0,0,.45); flex-shrink: 0; }
+    .dd-option.is-selected .dd-hint { color: #1677ff; }
+    .dd-option.is-disabled .dd-hint { color: rgba(0,0,0,.25); }
     .toast {
       position: fixed;
       top: 24px;
@@ -298,7 +305,7 @@
             <tr class="border-t row">
               <td class="p-3 whitespace-nowrap"><span class="inline-block px-2 py-0.5 rounded text-xs bg-emerald-50 text-emerald-600 font-medium">对象与物料信息映射</span></td>
               <td class="p-3 text-gray-600">物料类型：实验产物（普通物料）</td>
-              <td class="p-3 text-gray-600">13</td>
+              <td class="p-3 text-gray-600">12</td>
               <td class="p-3 text-gray-500">实验中产出的样品同步注册</td>
               <td class="p-3 text-xs text-gray-400 leading-5">david001<br>2026-01-16 16:13</td>
               <td class="p-3 text-xs text-gray-400 leading-5">david001<br>2026-01-16 16:13</td>
@@ -450,41 +457,55 @@
           { id: 'mf', name: '分子式 (MF)', type: 'mf', source: 'mf' },
           { id: 'mw', name: '分子量 (MW)', type: 'full_aa_sequence', source: 'mw' }
         ]
-      },
-      material: {
-        sources: [
-          { id: 'mat_name', name: '物料名称', type: '文本' },
-          { id: 'alias', name: '别名', type: '文本' },
-          { id: 'spec', name: '规格型号', type: '文本' },
-          { id: 'conc', name: '浓度', type: '数值' },
-          { id: 'purity', name: '纯度', type: '数值' },
-          { id: 'content', name: '含量', type: '数值' },
-          { id: 'maker', name: '生产厂家', type: '列表' },
-          { id: 'grade', name: '级别', type: '文本' },
-          { id: 'storage', name: '储存条件', type: '下拉选择框' },
-          { id: 'hazard', name: '危险特性', type: '复选框' },
-          { id: 'cold', name: '是否低温保存', type: '开关按钮' },
-          { id: 'msds', name: 'MSDS 文件', type: '上传' },
-          { id: 'remark', name: '备注', type: '多行文本' }
-        ],
-        targets: [
-          { id: 'name', name: '名称', type: '文本', source: 'mat_name' },
-          { id: 'code', name: '编号', type: '文本', source: '' },
-          { id: 'alias', name: '别名', type: '文本', source: 'alias' },
-          { id: 'spec', name: '规格', type: '文本', source: 'spec' },
-          { id: 'conc', name: '浓度', type: '数值', source: 'conc' },
-          { id: 'purity', name: '纯度', type: '数值', source: 'purity' },
-          { id: 'content', name: '含量', type: '数值', source: 'content' },
-          { id: 'maker', name: '厂家', type: '列表', source: 'maker' },
-          { id: 'grade', name: '物料级别', type: '文本', source: 'grade' },
-          { id: 'storage', name: '储存条件', type: '下拉选择框', source: 'storage' },
-          { id: 'hazard', name: '危险特性', type: '复选框', source: 'hazard' },
-          { id: 'cold', name: '是否低温保存', type: '开关按钮', source: 'cold' },
-          { id: 'msds', name: 'MSDS 文件', type: '上传', source: 'msds' },
-          { id: 'remark', name: '备注', type: '多行文本', source: 'remark' }
-        ]
       }
     };
+    /* 物料侧：基础信息 + 扩展字段类型；不含物料编号/注册数据/化合物/批次 */
+    const MATERIAL_CATALOG = {
+      '实验产物（普通物料）': [
+        { id: 'mat_name', name: '物料名称', type: '文本' },
+        { id: 'alias', name: '别名', type: '文本' },
+        { id: 'spec', name: '规格型号', type: '文本' },
+        { id: 'conc', name: '浓度', type: '数值' },
+        { id: 'purity', name: '纯度', type: '数值' },
+        { id: 'content', name: '含量', type: '数值' },
+        { id: 'maker', name: '生产厂家', type: '列表' },
+        { id: 'grade', name: '级别', type: '文本' },
+        { id: 'storage', name: '储存条件', type: '下拉选择框' },
+        { id: 'hazard', name: '危险特性', type: '复选框' },
+        { id: 'cold', name: '是否低温保存', type: '开关按钮' },
+        { id: 'msds', name: 'MSDS 文件', type: '上传' },
+        { id: 'remark', name: '备注', type: '多行文本' }
+      ],
+      '细胞株库（细胞）': [
+        { id: 'mat_name', name: '物料名称', type: '文本' },
+        { id: 'alias', name: '别名', type: '文本' },
+        { id: 'en_name', name: '外文名称', type: '文本' },
+        { id: 'maker', name: '生产厂家', type: '列表' },
+        { id: 'photo', name: '图片', type: '附件' },
+        { id: 'storage', name: '储存条件', type: '下拉选择框' },
+        { id: 'cold', name: '是否低温保存', type: '开关按钮' },
+        { id: 'remark', name: '备注', type: '多行文本' }
+      ]
+    };
+    /* 右侧始终是当前对象字段 + Registry 字段类型，不能套用物料类型名 */
+    const OBJECT_FIELDS_FOR_MATERIAL = [
+      { id: 'name', name: '名称', type: '文本', byMaterial: { '实验产物（普通物料）': 'mat_name', '细胞株库（细胞）': 'mat_name' } },
+      { id: 'code', name: '编号', type: '文本', byMaterial: {} },
+      { id: 'alias', name: '别名', type: '文本', byMaterial: { '实验产物（普通物料）': 'alias', '细胞株库（细胞）': 'alias' } },
+      { id: 'spec', name: '规格', type: '文本', byMaterial: { '实验产物（普通物料）': 'spec' } },
+      { id: 'conc', name: '浓度', type: '数字', byMaterial: { '实验产物（普通物料）': 'conc' } },
+      { id: 'purity', name: '纯度', type: '数字', byMaterial: { '实验产物（普通物料）': 'purity' } },
+      { id: 'content', name: '含量', type: '数字', byMaterial: { '实验产物（普通物料）': 'content' } },
+      { id: 'maker', name: '生产厂家', type: '下拉选择', byMaterial: { '实验产物（普通物料）': 'maker', '细胞株库（细胞）': 'maker' } },
+      { id: 'storage', name: '储存条件', type: '下拉选择', byMaterial: { '实验产物（普通物料）': 'storage', '细胞株库（细胞）': 'storage' } },
+      { id: 'hazard', name: '危险特性', type: '下拉选择', byMaterial: { '实验产物（普通物料）': 'hazard' } },
+      { id: 'cold', name: '低温保存', type: '勾选', byMaterial: { '实验产物（普通物料）': 'cold', '细胞株库（细胞）': 'cold' } },
+      { id: 'msds', name: 'MSDS', type: '附件', byMaterial: { '实验产物（普通物料）': 'msds' } },
+      { id: 'img', name: '结构示意图', type: '图片', byMaterial: { '细胞株库（细胞）': 'photo' } },
+      { id: 'remark', name: '备注', type: '文本', byMaterial: { '实验产物（普通物料）': 'remark', '细胞株库（细胞）': 'remark' } },
+      { id: 'project', name: '所属项目', type: '关联', byMaterial: {} },
+      { id: 'seq', name: '氨基酸序列', type: '文本', byMaterial: {} }
+    ];
 
     function showModal(id) {
       document.getElementById(id).classList.remove('hidden');
@@ -618,7 +639,7 @@
       items.forEach(it => {
         const row = document.createElement('div');
         row.className = 'dd-option' + (it.value === selected ? ' is-selected' : '') + (it.disabled ? ' is-disabled' : '');
-        row.textContent = it.label;
+        row.innerHTML = '<span>' + it.label + '</span>' + (it.hint ? '<span class="dd-hint">' + it.hint + '</span>' : '');
         if (!it.disabled) {
           row.onclick = (e) => {
             e.stopPropagation();
@@ -645,8 +666,21 @@
     document.addEventListener('click', closeChoiceMenu);
     document.addEventListener('scroll', closeChoiceMenu, true);
 
+    function currentMaterialType() {
+      return document.getElementById('sourceSelect').dataset.value;
+    }
     function currentCatalog() {
-      return FIELD_MAP[document.getElementById('fieldMappingType').value] || FIELD_MAP.object;
+      const type = document.getElementById('fieldMappingType').value;
+      if (type !== 'material') return FIELD_MAP.object;
+      const mat = currentMaterialType();
+      const sources = MATERIAL_CATALOG[mat] || MATERIAL_CATALOG['实验产物（普通物料）'];
+      const targets = OBJECT_FIELDS_FOR_MATERIAL.map(t => ({
+        id: t.id,
+        name: t.name,
+        type: t.type,
+        source: (t.byMaterial && t.byMaterial[mat]) || ''
+      }));
+      return { sources, targets };
     }
     function sourceById(id) {
       return currentCatalog().sources.find(s => s.id === id);
@@ -661,6 +695,7 @@
       return [{ value: '', label: '不设置' }].concat(currentCatalog().sources.map(s => ({
         value: s.id,
         label: s.name,
+        hint: s.type,
         disabled: used.includes(s.id) && exceptBtn.dataset.value !== s.id
       })));
     }
@@ -689,6 +724,7 @@
         openChoiceMenu(btn, opts, btn.dataset.value, (v, label) => {
           btn.dataset.value = v;
           btn.querySelector('.dd-label').textContent = label;
+          if (document.getElementById('fieldMappingType').value === 'material') renderFieldMap();
         });
       };
     }
@@ -725,7 +761,7 @@
         ? 'Antibody Complex (当前对象模型)'
         : '注册库 (当前对象模型)';
       document.getElementById('pairHint').innerText = isMaterial
-        ? '同一行即一对映射。右侧为当前对象全部字段；左侧选择物料源字段，不需要的可跳过。'
+        ? '右侧是当前对象字段（文本/数字/下拉选择/勾选/附件/关联…）；左侧选物料字段（数值/列表/下拉选择框/开关按钮/上传…）。两侧目录与类型体系不同。'
         : '同一行即一对映射。右侧为当前对象全部字段；左侧选择源字段，不需要的选「不设置」。';
       renderFieldMap();
     }
