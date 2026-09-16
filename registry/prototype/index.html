@@ -69,24 +69,20 @@
       padding: 12px 16px;
       border-bottom: 1px solid #f0f0f0;
     }
-    .map-table th:first-child,
-    .map-table td:first-child {
-      width: 40px;
-      padding-left: 16px;
-      padding-right: 0;
-      color: #bfbfbf;
-    }
     .map-table td:last-child { color: rgba(0,0,0,.45); }
+    .map-table thead th {
+      padding: 8px 12px;
+      vertical-align: middle;
+    }
+    .map-table thead .ant-ctrl { background: #fff; }
+    .map-table td.source-cell { padding: 8px 12px; }
+    .map-table tr.is-skip td { color: rgba(0,0,0,.25); }
     .map-split {
       display: grid;
       grid-template-columns: 1fr 1fr;
     }
     .map-pane { min-width: 0; }
     .map-pane + .map-pane { border-left: 1px solid #f0f0f0; }
-    .map-table tr.pair-hover > td { background: #e6f4ff; }
-    .map-table tr.drag-over > td { background: #f0f5ff; }
-    .map-table tr.dragging { opacity: 0.45; }
-    .map-table .empty-slot { color: rgba(0,0,0,.25); }
     .toast {
       position: fixed;
       top: 24px;
@@ -307,91 +303,41 @@
               <option value="object">对象模型映射</option>
               <option value="material">对象与物料信息映射</option>
             </select>
-            <select id="sourceSelect" class="ant-ctrl focus-ring mt-4" title="选择源对象或物料类型" aria-label="源侧"></select>
           </div>
           <div>
             <label class="form-label">备注</label>
             <input id="mappingRemark" type="text" value="antibody_metadata" class="ant-ctrl focus-ring">
-            <div class="field-map-title whitespace-nowrap overflow-hidden text-ellipsis mt-4" id="rightPaneTitle">注册库 (当前对象模型)</div>
           </div>
         </div>
 
         <div id="autoWriteTip" class="hidden items-start gap-2 bg-blue-50 text-blue-700 text-sm px-4 py-2.5 rounded-md mt-3">
           <i class="ri-information-line mt-0.5"></i>
-          <span><span class="font-medium">系统自动写入，不在对照表配置：</span>物料编号（自动生成，可改）、注册数据（指向源对象实体）、计量单位/计量小数位（按物料类型带出）。</span>
+          <span><span class="font-medium">系统自动写入，无需在此匹配：</span>物料编号（自动生成，可改）、注册数据（指向源对象实体）、计量单位/计量小数位（按物料类型带出）。</span>
         </div>
 
-        <div class="map-split mt-2">
+        <div class="map-split mt-4">
           <div class="map-pane">
-            <table id="leftObjectTable" class="map-table">
+            <table id="leftMapTable" class="map-table">
               <thead>
-                <tr><th></th><th>名称</th><th>字段类型</th></tr>
+                <tr>
+                  <th colspan="2">
+                    <select id="sourceSelect" class="ant-ctrl focus-ring" title="选择源对象或物料类型" aria-label="源侧"></select>
+                  </th>
+                </tr>
               </thead>
-              <tbody>
-                <tr class="row"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td>Structure</td><td>structure</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td>SMILES</td><td>smiles</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td>CAS</td><td>cas</td></tr>
-                <tr class="row" data-empty="1"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td class="empty-slot">未映射</td><td class="empty-slot">—</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td>分子式 (MF)</td><td>mf</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td>分子量 (MW)</td><td>full_aa_sequence</td></tr>
-              </tbody>
-            </table>
-            <table id="leftMaterialTable" class="map-table hidden">
-              <thead>
-                <tr><th></th><th>名称</th><th>字段类型</th></tr>
-              </thead>
-              <tbody>
-                <tr class="row"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td>物料名称</td><td>文本</td></tr>
-                <tr class="row" data-empty="1"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td class="empty-slot">未映射</td><td class="empty-slot">—</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td>别名</td><td>文本</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td>规格型号</td><td>文本</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td>浓度</td><td>数值</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td>纯度</td><td>数值</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td>含量</td><td>数值</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td>生产厂家</td><td>列表</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td>级别</td><td>文本</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td>储存条件</td><td>下拉选择框</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td>危险特性</td><td>复选框</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td>是否低温保存</td><td>开关按钮</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td>MSDS 文件</td><td>上传</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td>备注</td><td>多行文本</td></tr>
-              </tbody>
+              <tbody id="leftMapBody"></tbody>
             </table>
           </div>
           <div class="map-pane">
-            <table id="rightObjectTable" class="map-table">
+            <table id="rightMapTable" class="map-table">
               <thead>
-                <tr><th></th><th>名称</th><th>字段类型</th></tr>
+                <tr>
+                  <th colspan="2">
+                    <div class="field-map-title whitespace-nowrap overflow-hidden text-ellipsis" id="rightPaneTitle">注册库 (当前对象模型)</div>
+                  </th>
+                </tr>
               </thead>
-              <tbody>
-                <tr class="row"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td>Structure</td><td>structure</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td>SMILES</td><td>smiles</td></tr>
-                <tr class="row" data-empty="1"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td class="empty-slot">未映射</td><td class="empty-slot">—</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td>CADD</td><td>cadd</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td>分子式 (MF)</td><td>mf</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab" title="拖动以对齐左右字段"></i></td><td>分子量 (MW)</td><td>full_aa_sequence</td></tr>
-              </tbody>
-            </table>
-            <table id="rightMaterialTable" class="map-table hidden">
-              <thead>
-                <tr><th></th><th>名称</th><th>字段类型</th></tr>
-              </thead>
-              <tbody>
-                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>名称</td><td>文本</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>编号</td><td>文本</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>别名</td><td>文本</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>规格</td><td>文本</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>浓度</td><td>数值</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>纯度</td><td>数值</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>含量</td><td>数值</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>厂家</td><td>列表</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>物料级别</td><td>文本</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>储存条件</td><td>下拉选择框</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>危险特性</td><td>复选框</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>是否低温保存</td><td>开关按钮</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>MSDS 文件</td><td>上传</td></tr>
-                <tr class="row"><td><i class="ri-draggable cursor-grab"></i></td><td>备注</td><td>多行文本</td></tr>
-              </tbody>
+              <tbody id="rightMapBody"></tbody>
             </table>
           </div>
         </div>
@@ -429,7 +375,58 @@
     let lastMappingType = 'object';
     let suppressTypeChange = false;
     let confirmResolver = null;
-    let dragRow = null;
+
+    const FIELD_MAP = {
+      object: {
+        sources: [
+          { id: 'structure', name: 'Structure', type: 'structure' },
+          { id: 'smiles', name: 'SMILES', type: 'smiles' },
+          { id: 'cas', name: 'CAS', type: 'cas' },
+          { id: 'mf', name: '分子式 (MF)', type: 'mf' },
+          { id: 'mw', name: '分子量 (MW)', type: 'full_aa_sequence' }
+        ],
+        targets: [
+          { id: 'structure', name: 'Structure', type: 'structure', source: 'structure' },
+          { id: 'smiles', name: 'SMILES', type: 'smiles', source: 'smiles' },
+          { id: 'cadd', name: 'CADD', type: 'cadd', source: '' },
+          { id: 'mf', name: '分子式 (MF)', type: 'mf', source: 'mf' },
+          { id: 'mw', name: '分子量 (MW)', type: 'full_aa_sequence', source: 'mw' }
+        ]
+      },
+      material: {
+        sources: [
+          { id: 'mat_name', name: '物料名称', type: '文本' },
+          { id: 'alias', name: '别名', type: '文本' },
+          { id: 'spec', name: '规格型号', type: '文本' },
+          { id: 'conc', name: '浓度', type: '数值' },
+          { id: 'purity', name: '纯度', type: '数值' },
+          { id: 'content', name: '含量', type: '数值' },
+          { id: 'maker', name: '生产厂家', type: '列表' },
+          { id: 'grade', name: '级别', type: '文本' },
+          { id: 'storage', name: '储存条件', type: '下拉选择框' },
+          { id: 'hazard', name: '危险特性', type: '复选框' },
+          { id: 'cold', name: '是否低温保存', type: '开关按钮' },
+          { id: 'msds', name: 'MSDS 文件', type: '上传' },
+          { id: 'remark', name: '备注', type: '多行文本' }
+        ],
+        targets: [
+          { id: 'name', name: '名称', type: '文本', source: 'mat_name' },
+          { id: 'code', name: '编号', type: '文本', source: '' },
+          { id: 'alias', name: '别名', type: '文本', source: 'alias' },
+          { id: 'spec', name: '规格', type: '文本', source: 'spec' },
+          { id: 'conc', name: '浓度', type: '数值', source: 'conc' },
+          { id: 'purity', name: '纯度', type: '数值', source: 'purity' },
+          { id: 'content', name: '含量', type: '数值', source: 'content' },
+          { id: 'maker', name: '厂家', type: '列表', source: 'maker' },
+          { id: 'grade', name: '物料级别', type: '文本', source: 'grade' },
+          { id: 'storage', name: '储存条件', type: '下拉选择框', source: 'storage' },
+          { id: 'hazard', name: '危险特性', type: '复选框', source: 'hazard' },
+          { id: 'cold', name: '是否低温保存', type: '开关按钮', source: 'cold' },
+          { id: 'msds', name: 'MSDS 文件', type: '上传', source: 'msds' },
+          { id: 'remark', name: '备注', type: '多行文本', source: 'remark' }
+        ]
+      }
+    };
 
     function showModal(id) {
       document.getElementById(id).classList.remove('hidden');
@@ -546,68 +543,61 @@
       setMappingListEmpty(empty);
       showToast('映射已删除');
     }
-    function visibleMapBodies() {
-      const panes = document.querySelectorAll('#fieldMappingModal .map-pane');
-      return [
-        panes[0].querySelector('table:not(.hidden) tbody'),
-        panes[1].querySelector('table:not(.hidden) tbody')
-      ];
+    function currentCatalog() {
+      return FIELD_MAP[document.getElementById('fieldMappingType').value] || FIELD_MAP.object;
     }
-    function clearPairHover() {
-      document.querySelectorAll('#fieldMappingModal .map-table tr.pair-hover').forEach(tr => tr.classList.remove('pair-hover'));
+    function sourceById(id) {
+      return currentCatalog().sources.find(s => s.id === id);
     }
-    function highlightPair(index) {
-      const [left, right] = visibleMapBodies();
-      clearPairHover();
-      if (left && left.rows[index]) left.rows[index].classList.add('pair-hover');
-      if (right && right.rows[index]) right.rows[index].classList.add('pair-hover');
+    function usedSourceIds(exceptSelect) {
+      return Array.from(document.querySelectorAll('#leftMapBody select.source-field'))
+        .filter(sel => sel !== exceptSelect && sel.value)
+        .map(sel => sel.value);
     }
-    function bindMapInteractions() {
-      const [left, right] = visibleMapBodies();
-      [left, right].forEach(tbody => {
-        if (!tbody) return;
-        Array.from(tbody.rows).forEach(tr => { tr.draggable = true; });
-        if (tbody.dataset.bound === '1') return;
-        tbody.dataset.bound = '1';
-        tbody.addEventListener('mouseover', e => {
-          const tr = e.target.closest('tr');
-          if (!tr || !tbody.contains(tr)) return;
-          highlightPair(tr.rowIndex - 1);
-        });
-        tbody.addEventListener('mouseleave', clearPairHover);
-        tbody.addEventListener('dragstart', e => {
-          const tr = e.target.closest('tr');
-          if (!tr) return;
-          dragRow = tr;
-          tr.classList.add('dragging');
-          e.dataTransfer.effectAllowed = 'move';
-        });
-        tbody.addEventListener('dragend', () => {
-          if (dragRow) dragRow.classList.remove('dragging');
-          tbody.querySelectorAll('tr.drag-over').forEach(r => r.classList.remove('drag-over'));
-          dragRow = null;
-          updateMappedCount();
-        });
-        tbody.addEventListener('dragover', e => {
-          e.preventDefault();
-          const over = e.target.closest('tr');
-          if (!dragRow || !over || over === dragRow || over.parentNode !== dragRow.parentNode) return;
-          tbody.querySelectorAll('tr.drag-over').forEach(r => r.classList.remove('drag-over'));
-          over.classList.add('drag-over');
-          const rect = over.getBoundingClientRect();
-          const after = e.clientY > rect.top + rect.height / 2;
-          over.parentNode.insertBefore(dragRow, after ? over.nextSibling : over);
-        });
-        tbody.addEventListener('drop', e => e.preventDefault());
+    function fillSourceSelect(sel, selectedId) {
+      const used = usedSourceIds(sel);
+      const sources = currentCatalog().sources;
+      sel.innerHTML = '<option value="">不设置</option>' + sources.map(s => {
+        const taken = used.includes(s.id) && s.id !== selectedId;
+        return '<option value="' + s.id + '"' + (s.id === selectedId ? ' selected' : '') + (taken ? ' disabled' : '') + '>' + s.name + '</option>';
+      }).join('');
+      sel.value = selectedId || '';
+    }
+    function refreshAllSourceOptions() {
+      document.querySelectorAll('#leftMapBody select.source-field').forEach(sel => {
+        fillSourceSelect(sel, sel.value);
       });
+    }
+    function onSourceFieldChange(sel) {
+      const src = sourceById(sel.value);
+      const typeCell = sel.closest('tr').querySelector('.src-type');
+      typeCell.textContent = src ? src.type : '—';
+      sel.closest('tr').classList.toggle('is-skip', !sel.value);
+      refreshAllSourceOptions();
+      updateMappedCount();
+    }
+    function renderFieldMap() {
+      const cat = currentCatalog();
+      const left = document.getElementById('leftMapBody');
+      const right = document.getElementById('rightMapBody');
+      left.innerHTML = cat.targets.map(t => {
+        const src = sourceById(t.source);
+        const skip = !t.source;
+        return '<tr class="row' + (skip ? ' is-skip' : '') + '">' +
+          '<td class="source-cell"><select class="ant-ctrl focus-ring source-field" aria-label="为 ' + t.name + ' 选择源字段" onchange="onSourceFieldChange(this)"></select></td>' +
+          '<td class="src-type">' + (src ? src.type : '—') + '</td></tr>';
+      }).join('');
+      right.innerHTML = cat.targets.map(t =>
+        '<tr class="row"><td>' + t.name + '</td><td>' + t.type + '</td></tr>'
+      ).join('');
+      left.querySelectorAll('select.source-field').forEach((sel, i) => {
+        fillSourceSelect(sel, cat.targets[i].source);
+      });
+      updateMappedCount();
     }
     function switchMappingType() {
       const type = document.getElementById('fieldMappingType').value;
       const isMaterial = type === 'material';
-      document.getElementById('leftObjectTable').classList.toggle('hidden', isMaterial);
-      document.getElementById('rightObjectTable').classList.toggle('hidden', isMaterial);
-      document.getElementById('leftMaterialTable').classList.toggle('hidden', !isMaterial);
-      document.getElementById('rightMaterialTable').classList.toggle('hidden', !isMaterial);
       document.getElementById('autoWriteTip').classList.toggle('hidden', !isMaterial);
       document.getElementById('autoWriteTip').classList.toggle('flex', isMaterial);
       document.getElementById('batchFilterTip').classList.toggle('hidden', !isMaterial);
@@ -619,30 +609,23 @@
         ? 'Antibody Complex (当前对象模型)'
         : '注册库 (当前对象模型)';
       document.getElementById('pairHint').innerText = isMaterial
-        ? '左右同行即一对映射（物料字段 ← 对象字段）。批次字段已过滤。'
-        : '左右同行即一对映射；拖动手柄对齐。复制：左侧源对象 → 右侧当前对象。';
-      bindMapInteractions();
-      updateMappedCount();
+        ? '右侧为当前对象全部字段；左侧为每个目标字段选择物料源字段，不需要的可跳过。'
+        : '右侧为当前对象全部字段；左侧为每个目标字段选择源字段，不需要的选「不设置」。';
+      renderFieldMap();
     }
     function updateMappedCount() {
-      const [left, right] = visibleMapBodies();
-      const tip = document.getElementById('mappedCountTip');
-      if (!left || !right) { tip.innerText = ''; return; }
-      const n = Math.max(left.rows.length, right.rows.length);
-      let paired = 0, leftOnly = 0, rightOnly = 0;
-      for (let i = 0; i < n; i++) {
-        const lEmpty = !left.rows[i] || left.rows[i].dataset.empty === '1';
-        const rEmpty = !right.rows[i] || right.rows[i].dataset.empty === '1';
-        if (!lEmpty && !rEmpty) paired++;
-        else if (!lEmpty && rEmpty) leftOnly++;
-        else if (lEmpty && !rEmpty) rightOnly++;
-      }
-      const bits = ['已配对 ' + paired + ' 行'];
-      if (leftOnly) bits.push('左侧 ' + leftOnly + ' 个未映射');
-      if (rightOnly) bits.push('右侧 ' + rightOnly + ' 个未映射');
-      const type = document.getElementById('fieldMappingType').value;
-      if (type === 'material') bits.push('系统字段不占映射行');
-      tip.innerText = bits.join(' · ');
+      const sels = document.querySelectorAll('#leftMapBody select.source-field');
+      const total = sels.length;
+      let mapped = 0;
+      sels.forEach(sel => { if (sel.value) mapped++; });
+      const skipped = total - mapped;
+      const unused = currentCatalog().sources.filter(s =>
+        !Array.from(sels).some(sel => sel.value === s.id)
+      ).length;
+      const bits = ['已映射 ' + mapped + ' / ' + total];
+      if (skipped) bits.push('跳过 ' + skipped);
+      if (unused) bits.push('源侧 ' + unused + ' 个未使用');
+      document.getElementById('mappedCountTip').innerText = bits.join(' · ');
     }
     document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('fieldMappingType').value = 'object';
