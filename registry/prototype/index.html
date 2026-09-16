@@ -54,35 +54,29 @@
       color: rgba(0,0,0,.88);
     }
     .select-plain {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
       height: 22px;
-      width: 100%;
       max-width: 100%;
       border: none;
-      border-radius: 0;
       background: transparent;
-      padding: 0 18px 0 0;
+      padding: 0;
       font-size: 14px;
       font-weight: 500;
       line-height: 22px;
       color: rgba(0,0,0,.88);
-      box-shadow: none;
-      -webkit-appearance: none;
-      appearance: none;
-      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='%238c8c8c' d='M0 0l5 6 5-6z'/></svg>");
-      background-repeat: no-repeat;
-      background-position: right 0 center;
       cursor: pointer;
     }
+    .select-plain .ri-arrow-down-s-line { font-size: 16px; color: #8c8c8c; }
     .select-plain:hover,
-    .select-plain:focus {
-      border: none;
-      outline: none;
-      box-shadow: none;
-      color: #1677ff;
-    }
+    .select-plain.dd-open { color: #1677ff; }
+    .select-plain:hover .ri-arrow-down-s-line,
+    .select-plain.dd-open .ri-arrow-down-s-line { color: #1677ff; }
     .map-table {
       width: 100%;
       border-collapse: collapse;
+      table-layout: fixed;
       font-size: 14px;
     }
     .map-table th {
@@ -94,10 +88,13 @@
       text-align: left;
     }
     .map-table td {
-      padding: 12px 16px;
+      padding: 8px 16px;
       border-bottom: 1px solid #f0f0f0;
+      height: 48px;
+      vertical-align: middle;
     }
-    .map-table td:last-child { color: rgba(0,0,0,.45); }
+    .map-table td:nth-child(2),
+    .map-table td:nth-child(4) { color: rgba(0,0,0,.45); }
     .map-table thead tr:first-child th {
       padding: 8px 16px 4px;
       border-bottom: none;
@@ -108,14 +105,41 @@
       font-weight: 400;
       font-size: 13px;
     }
-    .map-table td.source-cell { padding: 8px 12px; }
-    .map-table tr.is-skip td { color: rgba(0,0,0,.25); }
-    .map-split {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
+    .map-table th.split,
+    .map-table td.split { border-left: 1px solid #f0f0f0; }
+    .map-table tr.is-skip td:nth-child(-n+2) { color: rgba(0,0,0,.25); }
+    .source-field {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      width: 100%;
+      height: 32px;
+      text-align: left;
+      cursor: pointer;
     }
-    .map-pane { min-width: 0; }
-    .map-pane + .map-pane { border-left: 1px solid #f0f0f0; }
+    .source-field .ri-arrow-down-s-line { color: #8c8c8c; flex-shrink: 0; }
+    .source-field.dd-open { border-color: #4096ff; box-shadow: 0 0 0 2px rgba(5,145,255,0.12); }
+    .dd-panel {
+      position: fixed;
+      z-index: 90;
+      background: #fff;
+      border: 1px solid #f0f0f0;
+      border-radius: 8px;
+      box-shadow: 0 6px 16px rgba(0,0,0,.12);
+      padding: 4px 0;
+      max-height: 240px;
+      overflow-y: auto;
+    }
+    .dd-option {
+      padding: 7px 12px;
+      font-size: 14px;
+      color: rgba(0,0,0,.88);
+      cursor: pointer;
+    }
+    .dd-option:hover { background: #f5f5f5; }
+    .dd-option.is-selected { color: #1677ff; background: #e6f4ff; }
+    .dd-option.is-disabled { color: rgba(0,0,0,.25); cursor: not-allowed; }
     .toast {
       position: fixed;
       top: 24px;
@@ -348,40 +372,33 @@
           <span><span class="font-medium">系统自动写入，无需在此匹配：</span>物料编号（自动生成，可改）、注册数据（指向源对象实体）、计量单位/计量小数位（按物料类型带出）。</span>
         </div>
 
-        <div class="map-split mt-4">
-          <div class="map-pane">
-            <table id="leftMapTable" class="map-table">
-              <thead>
-                <tr>
-                  <th colspan="2">
-                    <select id="sourceSelect" class="select-plain" title="选择源对象或物料类型" aria-label="源侧"></select>
-                  </th>
-                </tr>
-                <tr>
-                  <th>名称</th>
-                  <th>字段类型</th>
-                </tr>
-              </thead>
-              <tbody id="leftMapBody"></tbody>
-            </table>
-          </div>
-          <div class="map-pane">
-            <table id="rightMapTable" class="map-table">
-              <thead>
-                <tr>
-                  <th colspan="2">
-                    <div class="field-map-title whitespace-nowrap overflow-hidden text-ellipsis" id="rightPaneTitle">注册库 (当前对象模型)</div>
-                  </th>
-                </tr>
-                <tr>
-                  <th>名称</th>
-                  <th>字段类型</th>
-                </tr>
-              </thead>
-              <tbody id="rightMapBody"></tbody>
-            </table>
-          </div>
-        </div>
+        <table id="pairMapTable" class="map-table mt-4">
+          <colgroup>
+            <col style="width:32%">
+            <col style="width:18%">
+            <col style="width:32%">
+            <col style="width:18%">
+          </colgroup>
+          <thead>
+            <tr>
+              <th colspan="2">
+                <button type="button" id="sourceSelect" class="select-plain" data-value="设计库" title="选择源对象或物料类型" aria-label="源侧" aria-haspopup="listbox">
+                  <span class="dd-label">设计库</span><i class="ri-arrow-down-s-line"></i>
+                </button>
+              </th>
+              <th colspan="2" class="split">
+                <div class="field-map-title whitespace-nowrap overflow-hidden text-ellipsis" id="rightPaneTitle">注册库 (当前对象模型)</div>
+              </th>
+            </tr>
+            <tr>
+              <th>名称</th>
+              <th>字段类型</th>
+              <th class="split">名称</th>
+              <th>字段类型</th>
+            </tr>
+          </thead>
+          <tbody id="mapBody"></tbody>
+        </table>
 
         <div id="batchFilterTip" class="hidden items-center gap-1.5 text-xs text-gray-400 mt-3"><i class="ri-filter-3-line"></i>批次信息字段已过滤，不参与映射。</div>
       </div>
@@ -584,55 +601,112 @@
       setMappingListEmpty(empty);
       showToast('映射已删除');
     }
+    let activeMenu = null;
+    const SOURCE_OBJECTS = {
+      object: ['设计库', '参考库'],
+      material: ['实验产物（普通物料）', '细胞株库（细胞）']
+    };
+
+    function closeChoiceMenu() {
+      if (activeMenu) { activeMenu.remove(); activeMenu = null; }
+      document.querySelectorAll('.dd-open').forEach(el => el.classList.remove('dd-open'));
+    }
+    function openChoiceMenu(anchor, items, selected, onPick) {
+      closeChoiceMenu();
+      const menu = document.createElement('div');
+      menu.className = 'dd-panel';
+      items.forEach(it => {
+        const row = document.createElement('div');
+        row.className = 'dd-option' + (it.value === selected ? ' is-selected' : '') + (it.disabled ? ' is-disabled' : '');
+        row.textContent = it.label;
+        if (!it.disabled) {
+          row.onclick = (e) => {
+            e.stopPropagation();
+            onPick(it.value, it.label);
+            closeChoiceMenu();
+          };
+        }
+        menu.appendChild(row);
+      });
+      document.body.appendChild(menu);
+      const r = anchor.getBoundingClientRect();
+      let top = r.bottom + 4;
+      let left = r.left;
+      menu.style.minWidth = Math.max(r.width, 160) + 'px';
+      const mh = menu.offsetHeight;
+      const mw = menu.offsetWidth;
+      if (top + mh > window.innerHeight - 8) top = Math.max(8, r.top - mh - 4);
+      if (left + mw > window.innerWidth - 8) left = Math.max(8, window.innerWidth - mw - 8);
+      menu.style.top = top + 'px';
+      menu.style.left = left + 'px';
+      activeMenu = menu;
+      anchor.classList.add('dd-open');
+    }
+    document.addEventListener('click', closeChoiceMenu);
+    document.addEventListener('scroll', closeChoiceMenu, true);
+
     function currentCatalog() {
       return FIELD_MAP[document.getElementById('fieldMappingType').value] || FIELD_MAP.object;
     }
     function sourceById(id) {
       return currentCatalog().sources.find(s => s.id === id);
     }
-    function usedSourceIds(exceptSelect) {
-      return Array.from(document.querySelectorAll('#leftMapBody select.source-field'))
-        .filter(sel => sel !== exceptSelect && sel.value)
-        .map(sel => sel.value);
+    function usedSourceIds(exceptBtn) {
+      return Array.from(document.querySelectorAll('#mapBody .source-field'))
+        .filter(btn => btn !== exceptBtn && btn.dataset.value)
+        .map(btn => btn.dataset.value);
     }
-    function fillSourceSelect(sel, selectedId) {
-      const used = usedSourceIds(sel);
-      const sources = currentCatalog().sources;
-      sel.innerHTML = '<option value="">不设置</option>' + sources.map(s => {
-        const taken = used.includes(s.id) && s.id !== selectedId;
-        return '<option value="' + s.id + '"' + (s.id === selectedId ? ' selected' : '') + (taken ? ' disabled' : '') + '>' + s.name + '</option>';
-      }).join('');
-      sel.value = selectedId || '';
+    function sourceFieldItems(exceptBtn) {
+      const used = usedSourceIds(exceptBtn);
+      return [{ value: '', label: '不设置' }].concat(currentCatalog().sources.map(s => ({
+        value: s.id,
+        label: s.name,
+        disabled: used.includes(s.id) && exceptBtn.dataset.value !== s.id
+      })));
     }
-    function refreshAllSourceOptions() {
-      document.querySelectorAll('#leftMapBody select.source-field').forEach(sel => {
-        fillSourceSelect(sel, sel.value);
-      });
-    }
-    function onSourceFieldChange(sel) {
-      const src = sourceById(sel.value);
-      const typeCell = sel.closest('tr').querySelector('.src-type');
+    function setSourceFieldBtn(btn, sourceId) {
+      const src = sourceById(sourceId);
+      btn.dataset.value = sourceId || '';
+      btn.innerHTML = '<span class="dd-label">' + (src ? src.name : '不设置') + '</span><i class="ri-arrow-down-s-line"></i>';
+      const typeCell = btn.closest('tr').querySelector('.src-type');
       typeCell.textContent = src ? src.type : '—';
-      sel.closest('tr').classList.toggle('is-skip', !sel.value);
-      refreshAllSourceOptions();
-      updateMappedCount();
+      btn.closest('tr').classList.toggle('is-skip', !sourceId);
+    }
+    function bindSourceFieldBtn(btn) {
+      btn.onclick = (e) => {
+        e.stopPropagation();
+        openChoiceMenu(btn, sourceFieldItems(btn), btn.dataset.value || '', (v) => {
+          setSourceFieldBtn(btn, v);
+          updateMappedCount();
+        });
+      };
+    }
+    function bindSourceObjectBtn() {
+      const btn = document.getElementById('sourceSelect');
+      btn.onclick = (e) => {
+        e.stopPropagation();
+        const opts = SOURCE_OBJECTS[document.getElementById('fieldMappingType').value].map(name => ({ value: name, label: name }));
+        openChoiceMenu(btn, opts, btn.dataset.value, (v, label) => {
+          btn.dataset.value = v;
+          btn.querySelector('.dd-label').textContent = label;
+        });
+      };
     }
     function renderFieldMap() {
+      closeChoiceMenu();
       const cat = currentCatalog();
-      const left = document.getElementById('leftMapBody');
-      const right = document.getElementById('rightMapBody');
-      left.innerHTML = cat.targets.map(t => {
-        const src = sourceById(t.source);
+      const body = document.getElementById('mapBody');
+      body.innerHTML = cat.targets.map(t => {
         const skip = !t.source;
         return '<tr class="row' + (skip ? ' is-skip' : '') + '">' +
-          '<td class="source-cell"><select class="ant-ctrl focus-ring source-field" aria-label="为 ' + t.name + ' 选择源字段" onchange="onSourceFieldChange(this)"></select></td>' +
-          '<td class="src-type">' + (src ? src.type : '—') + '</td></tr>';
+          '<td class="source-cell"><button type="button" class="ant-ctrl source-field" aria-haspopup="listbox" aria-label="为 ' + t.name + ' 选择源字段"></button></td>' +
+          '<td class="src-type">—</td>' +
+          '<td class="split">' + t.name + '</td>' +
+          '<td>' + t.type + '</td></tr>';
       }).join('');
-      right.innerHTML = cat.targets.map(t =>
-        '<tr class="row"><td>' + t.name + '</td><td>' + t.type + '</td></tr>'
-      ).join('');
-      left.querySelectorAll('select.source-field').forEach((sel, i) => {
-        fillSourceSelect(sel, cat.targets[i].source);
+      body.querySelectorAll('.source-field').forEach((btn, i) => {
+        setSourceFieldBtn(btn, cat.targets[i].source);
+        bindSourceFieldBtn(btn);
       });
       updateMappedCount();
     }
@@ -643,25 +717,26 @@
       document.getElementById('autoWriteTip').classList.toggle('flex', isMaterial);
       document.getElementById('batchFilterTip').classList.toggle('hidden', !isMaterial);
       document.getElementById('batchFilterTip').classList.toggle('flex', isMaterial);
-      document.getElementById('sourceSelect').innerHTML = isMaterial
-        ? '<option>实验产物（普通物料）</option><option>细胞株库（细胞）</option>'
-        : '<option>设计库</option><option>参考库</option>';
+      const names = SOURCE_OBJECTS[type];
+      const btn = document.getElementById('sourceSelect');
+      btn.dataset.value = names[0];
+      btn.querySelector('.dd-label').textContent = names[0];
       document.getElementById('rightPaneTitle').innerText = isMaterial
         ? 'Antibody Complex (当前对象模型)'
         : '注册库 (当前对象模型)';
       document.getElementById('pairHint').innerText = isMaterial
-        ? '右侧为当前对象全部字段；左侧为每个目标字段选择物料源字段，不需要的可跳过。'
-        : '右侧为当前对象全部字段；左侧为每个目标字段选择源字段，不需要的选「不设置」。';
+        ? '同一行即一对映射。右侧为当前对象全部字段；左侧选择物料源字段，不需要的可跳过。'
+        : '同一行即一对映射。右侧为当前对象全部字段；左侧选择源字段，不需要的选「不设置」。';
       renderFieldMap();
     }
     function updateMappedCount() {
-      const sels = document.querySelectorAll('#leftMapBody select.source-field');
-      const total = sels.length;
+      const btns = document.querySelectorAll('#mapBody .source-field');
+      const total = btns.length;
       let mapped = 0;
-      sels.forEach(sel => { if (sel.value) mapped++; });
+      btns.forEach(btn => { if (btn.dataset.value) mapped++; });
       const skipped = total - mapped;
       const unused = currentCatalog().sources.filter(s =>
-        !Array.from(sels).some(sel => sel.value === s.id)
+        !Array.from(btns).some(btn => btn.dataset.value === s.id)
       ).length;
       const bits = ['已映射 ' + mapped + ' / ' + total];
       if (skipped) bits.push('跳过 ' + skipped);
@@ -672,6 +747,7 @@
       document.getElementById('fieldMappingType').value = 'object';
       lastMappingType = 'object';
       switchMappingType();
+      bindSourceObjectBtn();
       const h = location.hash;
       if (h === '#mapping-config') openFieldMapping('object', 'none');
       else if (h === '#mapping-config-material') openFieldMapping('material', 'none');
