@@ -58,10 +58,10 @@
       font-size: 14px;
     }
     .map-table th {
-      background: #fafafa;
+      background: #f5f5f5;
       font-weight: 500;
       color: rgba(0,0,0,.88);
-      padding: 12px 16px;
+      padding: 10px 16px;
       border-bottom: 1px solid #f0f0f0;
       text-align: left;
     }
@@ -293,13 +293,15 @@
             <input id="mappingRemark" type="text" value="antibody_metadata" class="ant-ctrl focus-ring">
             <div class="field-map-title whitespace-nowrap overflow-hidden text-ellipsis mt-4" id="rightPaneTitle">注册库 (当前对象模型)</div>
           </div>
+        </div>
 
-          <div id="autoWriteTip" class="hidden col-span-2 items-start gap-2 bg-blue-50 text-blue-700 text-sm px-4 py-2.5 rounded-md mt-3">
-            <i class="ri-information-line mt-0.5"></i>
-            <span><span class="font-medium">系统自动写入：</span>物料编号（自动生成，可改）、注册数据（自动指向源对象实体）、计量单位/计量小数位（按物料类型自动带出）。以上字段无需配置映射。</span>
-          </div>
+        <div id="autoWriteTip" class="hidden items-start gap-2 bg-blue-50 text-blue-700 text-sm px-4 py-2.5 rounded-md mt-3">
+          <i class="ri-information-line mt-0.5"></i>
+          <span><span class="font-medium">系统自动写入：</span>物料编号（自动生成，可改）、注册数据（自动指向源对象实体）、计量单位/计量小数位（按物料类型自动带出）。以上字段无需配置映射。</span>
+        </div>
 
-          <div class="min-w-0 mt-2">
+        <div class="map-split mt-2">
+          <div class="map-pane">
             <table id="leftObjectTable" class="map-table">
               <thead>
                 <tr><th></th><th>名称</th><th>字段类型</th></tr>
@@ -337,7 +339,7 @@
               </tbody>
             </table>
           </div>
-          <div class="min-w-0 mt-2">
+          <div class="map-pane">
             <table id="rightObjectTable" class="map-table">
               <thead>
                 <tr><th></th><th>名称</th><th>字段类型</th></tr>
