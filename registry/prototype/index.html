@@ -470,9 +470,9 @@
         { id: 'mat_name', name: '物料名称', type: '文本' },
         { id: 'alias', name: '别名', type: '文本' },
         { id: 'spec', name: '规格型号', type: '文本' },
-        { id: 'conc', name: '浓度', type: '数值' },
-        { id: 'purity', name: '纯度', type: '数值' },
-        { id: 'content', name: '含量', type: '数值' },
+        { id: 'conc', name: '浓度', type: '数值', unit: 'mg/mL' },
+        { id: 'purity', name: '纯度', type: '数值', unit: '%' },
+        { id: 'content', name: '含量', type: '数值', unit: 'mg' },
         { id: 'maker', name: '生产厂家', type: '列表' },
         { id: 'grade', name: '级别', type: '文本' },
         { id: 'storage', name: '储存条件', type: '下拉选择框' },
@@ -498,9 +498,9 @@
       { id: 'code', name: '编号', type: '文本' },
       { id: 'alias', name: '别名', type: '文本' },
       { id: 'spec', name: '规格', type: '文本' },
-      { id: 'conc', name: '浓度', type: '数字' },
-      { id: 'purity', name: '纯度', type: '数字' },
-      { id: 'content', name: '含量', type: '数字' },
+      { id: 'conc', name: '浓度', type: '数字', unit: 'mg/mL' },
+      { id: 'purity', name: '纯度', type: '数字', unit: '%' },
+      { id: 'content', name: '含量', type: '数字', unit: 'mg' },
       { id: 'maker', name: '生产厂家', type: '下拉选择' },
       { id: 'storage', name: '储存条件', type: '下拉选择' },
       { id: 'hazard', name: '危险特性', type: '下拉选择' },
@@ -519,8 +519,8 @@
         mat_name: 'name',
         alias: 'alias',
         spec: 'spec',
-        conc: 'formula_conc',
-        purity: 'rollup_purity',
+        conc: 'conc',
+        purity: 'purity',
         content: 'content',
         maker: 'maker',
         grade: 'lookup_name',
@@ -741,7 +741,7 @@
       return [{ value: '', label: '不设置' }].concat(currentCatalog().sources.map(s => ({
         value: s.id,
         label: s.name,
-        hint: s.type,
+        hint: s.unit ? (s.type + ' · ' + s.unit) : s.type,
         disabled: (used.includes(s.id) && exceptBtn.dataset.value !== s.id) ||
           (restrictCalc && isCalcType(s.type) && !allowsCalcSource(targetType))
       })));
@@ -754,7 +754,7 @@
       btn.dataset.value = id;
       btn.innerHTML = '<span class="dd-label">' + (picked ? picked.name : '不设置') + '</span><i class="ri-arrow-down-s-line"></i>';
       const typeCell = btn.closest('tr').querySelector('.src-type');
-      typeCell.textContent = picked ? picked.type : '—';
+      typeCell.textContent = picked ? (picked.unit ? picked.type + ' · ' + picked.unit : picked.type) : '—';
       btn.closest('tr').classList.toggle('is-skip', !id);
     }
     function bindSourceFieldBtn(btn) {
@@ -799,7 +799,7 @@
           '<td class="source-cell"><button type="button" class="ant-ctrl source-field" aria-haspopup="listbox" aria-label="为 ' + t.name + ' 选择源字段"></button></td>' +
           '<td class="src-type">—</td>' +
           '<td class="split">' + t.name + '</td>' +
-          '<td>' + t.type + '</td></tr>';
+          '<td>' + t.type + (t.unit ? ' · ' + t.unit : '') + '</td></tr>';
       }).join('');
       body.querySelectorAll('.source-field').forEach((btn, i) => {
         btn.dataset.targetType = cat.targets[i].type;
@@ -826,7 +826,7 @@
         document.getElementById('rightPaneTitle').innerText = '注册库 (当前对象模型)';
       }
       document.getElementById('pairHint').innerText = isMaterial
-        ? '物料对照：右侧是物料基础/扩展字段。左侧选当前对象字段。对象计算字段（关联查找/公式/汇总）可映到物料文本或数值；不能作为写入目标。'
+        ? '物料对照：右侧物料字段。左侧选当前对象字段。浓度/含量/纯度为数字+单位成对映射。对象计算字段可映到文本或数值，不能作为写入目标。'
         : '同一行即一对映射。右侧为当前对象全部字段；左侧选择源字段，不需要的选「不设置」。';
       renderFieldMap();
     }
