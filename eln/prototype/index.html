@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <title>ELN 实验产出 · 入库原型（同屏双建）</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
+  <style>
+    html, body { overflow-x: hidden; }
+    .focus-ring:focus { outline: none; border-color: #4096ff; box-shadow: 0 0 0 2px rgba(5,145,255,0.12); }
+    .btn-primary { background: #1677ff; transition: background-color .15s; }
+    .btn-primary:hover { background-color: #4096ff; }
+    .btn-plain { transition: background-color .15s; }
+    .btn-plain:hover { background-color: #f5f5f5; }
+    .ant-ctrl {
+      height: 32px; width: 100%; border: 1px solid #d9d9d9; border-radius: 6px;
+      padding: 0 11px; font-size: 14px; line-height: 32px; background: #fff; color: rgba(0,0,0,.88);
+    }
+    textarea.ant-ctrl { height: auto; line-height: 22px; padding: 5px 11px; resize: vertical; }
+    .ant-ctrl:hover { border-color: #4096ff; }
+    .ant-ctrl[readonly] { background: #f5f5f5; color: rgba(0,0,0,.45); }
+    .req::before { content: '*'; color: #ff4d4f; margin-right: 4px; }
+    .hint { font-size: 12px; color: rgba(0,0,0,.45); }
+    .drawer-mask { background: rgba(0,0,0,.45); }
+    .section-h {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 14px; font-weight: 600; color: rgba(0,0,0,.88);
+      margin: 16px 0 12px;
+    }
+    .section-h:before {
+      content: ''; width: 3px; height: 14px; background: #1677ff; border-radius: 2px;
+    }
+    .dual-banner {
+      background: #e6f4ff; border: 1px solid #91caff; color: #1677ff;
+      font-size: 13px; padding: 8px 12px; border-radius: 6px; margin-bottom: 12px;
+    }
+    .weak-banner {
+      background: #fffbe6; border: 1px solid #ffe58f; color: #ad6800;
+      font-size: 13px; padding: 8px 12px; border-radius: 6px; margin-bottom: 12px;
+    }
+    .sub-label { font-size: 12px; color: rgba(0,0,0,.45); margin-top: 2px; }
+    .toast {
+      position: fixed; top: 24px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,.75); color: #fff; font-size: 13px;
+      padding: 8px 16px; border-radius: 6px; z-index: 80;
+    }
+    .proto-bar {
+      background: #fff7e6; border-bottom: 1px solid #ffd591;
+      color: #ad6800; font-size: 13px; padding: 8px 16px;
+    }
+    .eln-block { border: 1px solid #f0f0f0; border-radius: 8px; }
+    table.mini { width: 100%; font-size: 13px; border-collapse: collapse; }
+    table.mini th { background: #fafafa; color: rgba(0,0,0,.65); font-weight: 500; padding: 8px; border: 1px solid #f0f0f0; text-align: left; }
+    table.mini td { padding: 6px 8px; border: 1px solid #f0f0f0; }
+    .more-link { color: #1677ff; font-size: 13px; cursor: pointer; }
+    .more-link:hover { color: #4096ff; }
+  </style>
+</head>
+<body class="bg-[#f5f5f5] text-gray-800 min-h-screen">
+
+  <div class="proto-bar">
+    原型 · 细节未确认，以本页讨论为准，确认后再写入正式说明。场景：合成完成后点「添加」，一次登记对象实体 + 物料主数据。
+    <a href="../ELN-实验产出入库-功能说明.md" class="underline ml-2 hidden">说明稿</a>
+  </div>
+
+  <div class="max-w-[1100px] mx-auto px-4 py-5">
+    <div class="text-xs text-gray-400 mb-2">实验记录 / ELN-20260917-001</div>
+    <h1 class="text-lg font-semibold mb-4">TMBS诱导Balb/c小鼠IBD模型的模型探索研究</h1>
+
+    <div class="bg-white rounded-lg border border-gray-100 p-4 mb-4 text-sm text-gray-600 leading-6">
+      合成反应完成后得到目标产物 Antibody Complex。下面用「系统-实验产出」登记入库：有映射时重叠字段只填一次，同时新建对象与物料；批次和存放仍手填。
+    </div>
+
+    <div class="eln-block bg-white">
+      <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+        <div class="flex items-center gap-2 font-medium">
+          <i class="ri-flask-line text-blue-500"></i>
+          系统-实验产出
+        </div>
+        <div class="flex items-center gap-3 text-sm">
+          <button class="text-blue-600" onclick="openDrawer()">添加</button>
+          <span class="text-gray-300">|</span>
+          <span class="text-gray-400">批量入库</span>
+          <span class="text-gray-400">删除</span>
+        </div>
+      </div>
+      <div id="moduleEmpty" class="py-10 text-center text-gray-400 text-sm">暂无数据</div>
+      <div id="moduleTable" class="hidden overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 text-gray-500">
+            <tr>
+              <th class="px-4 py-2 text-left">对象编号</th>
+              <th class="px-4 py-2 text-left">物料编号</th>
+              <th class="px-4 py-2 text-left">名称</th>
+              <th class="px-4 py-2 text-left">物料类型</th>
+              <th class="px-4 py-2 text-left">批次号</th>
+              <th class="px-4 py-2 text-left">状态</th>
+            </tr>
+          </thead>
+          <tbody id="moduleBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Drawer -->
+  <div id="drawerRoot" class="fixed inset-0 hidden z-50">
+    <div class="drawer-mask absolute inset-0" onclick="closeDrawer()"></div>
+    <aside class="absolute right-0 top-0 h-full w-[560px] bg-white shadow-xl flex flex-col">
+      <div class="flex items-center justify-between px-5 py-3 border-b">
+        <div class="font-medium">入库</div>
+        <button class="text-gray-400 hover:text-gray-600" onclick="closeDrawer()"><i class="ri-close-line text-lg"></i></button>
+      </div>
+      <div class="flex-1 overflow-y-auto px-5 py-4" id="drawerBody"></div>
+      <div class="flex justify-end gap-2 px-5 py-3 border-t bg-white">
+        <button class="btn-plain border rounded-md px-4 h-8 text-sm" onclick="closeDrawer()">取消</button>
+        <button class="btn-plain border rounded-md px-4 h-8 text-sm" onclick="saveDraft()">保存</button>
+        <button class="btn-primary text-white rounded-md px-4 h-8 text-sm" onclick="confirmInbound()">确认入库</button>
+      </div>
+    </aside>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script>
+    const TYPES = {
+      product: {
+        id: 'product',
+        label: '实验产物（普通物料）',
+        objectName: 'Antibody Complex',
+        dual: true,
+        objectCode: 'AC-20260917-001',
+        materialCode: 'HW-20260917-001',
+        shared: [
+          { id: 'mat_name', label: '物料名称', obj: '名称', req: true, ctrl: 'text', ph: '请输入' },
+          { id: 'alias', label: '别名', obj: '别名', req: false, ctrl: 'text' },
+          { id: 'spec', label: '规格型号', obj: '规格', req: false, ctrl: 'text' },
+          { id: 'conc', label: '浓度', obj: '计算浓度', req: false, ctrl: 'number', ph: '数值' },
+          { id: 'purity', label: '纯度', obj: '批次纯度', req: false, ctrl: 'number' },
+          { id: 'content', label: '含量', obj: '含量', req: false, ctrl: 'number' },
+          { id: 'maker', label: '生产厂家', obj: '生产厂家', req: false, ctrl: 'select', options: ['请选择', '内部制备', 'Sigma', 'Thermo'] },
+          { id: 'grade', label: '级别', obj: '通用名', req: false, ctrl: 'text' },
+          { id: 'storage', label: '储存条件', obj: '储存条件', req: false, ctrl: 'select', options: ['请选择', '常温', '2-8℃', '-20℃', '-80℃'] },
+          { id: 'hazard', label: '危险特性', obj: '危险特性', req: false, ctrl: 'select', options: ['请选择', '无', '易燃', '毒性'] },
+          { id: 'cold', label: '是否低温保存', obj: '低温保存', req: false, ctrl: 'switch' },
+          { id: 'msds', label: 'MSDS 文件', obj: 'MSDS', req: false, ctrl: 'file' },
+          { id: 'remark', label: '备注', obj: '备注', req: false, ctrl: 'textarea' }
+        ],
+        objectExtra: [
+          { id: 'seq', label: '氨基酸序列', req: false, ctrl: 'textarea' },
+          { id: 'img', label: '结构示意图', req: false, ctrl: 'file' },
+          { id: 'dept', label: '所属部门', req: false, ctrl: 'text', value: '抗体研发部' },
+          { id: 'project', label: '所属项目', req: false, ctrl: 'text', value: 'IBD 模型探索' },
+          { id: 'visible', label: '可见范围', req: false, ctrl: 'select', options: ['项目内', '部门内', '公司内'] }
+        ],
+        materialExtra: [
+          { id: 'unit', label: '计量单位', req: true, ctrl: 'select', options: ['mg', 'g', 'mL', '管'], value: 'mg', system: true },
+          { id: 'compound', label: '化合物', req: false, ctrl: 'text', ph: '不映射，仅物料' }
+        ],
+        batch: [
+          { id: 'lot', label: '批次号', req: true, ctrl: 'text' },
+          { id: 'exp', label: '有效期至', req: false, ctrl: 'date' },
+          { id: 'coa', label: 'COA', req: false, ctrl: 'file' },
+          { id: 'src', label: '来源实验', req: false, ctrl: 'text', value: 'ELN-20260917-001', readonly: true }
+        ]
+      },
+      cell: {
+        id: 'cell',
+        label: '细胞株库（细胞）',
+        objectName: 'CHO-K1 细胞株',
+        dual: true,
+        objectCode: 'CL-20260917-001',
+        materialCode: 'CELL-20260917-001',
+        shared: [
+          { id: 'mat_name', label: '物料名称', obj: '名称', req: true, ctrl: 'text' },
+          { id: 'alias', label: '别名', obj: '别名', req: false, ctrl: 'text' },
+          { id: 'en_name', label: '外文名称', obj: '通用名', req: false, ctrl: 'text' },
+          { id: 'maker', label: '生产厂家', obj: '生产厂家', req: false, ctrl: 'select', options: ['请选择', '内部制备', 'ATCC'] },
+          { id: 'photo', label: '图片', obj: '结构示意图', req: false, ctrl: 'file' },
+          { id: 'storage', label: '储存条件', obj: '储存条件', req: false, ctrl: 'select', options: ['请选择', '液氮', '-80℃'] },
+          { id: 'cold', label: '是否低温保存', obj: '低温保存', req: false, ctrl: 'switch' },
+          { id: 'remark', label: '备注', obj: '备注', req: false, ctrl: 'textarea' }
+        ],
+        objectExtra: [
+          { id: 'seq', label: '氨基酸序列', req: false, ctrl: 'textarea' },
+          { id: 'spec', label: '规格', req: false, ctrl: 'text' }
+        ],
+        materialExtra: [
+          { id: 'unit', label: '计量单位', req: true, ctrl: 'select', options: ['管', 'mL'], value: '管', system: true }
+        ],
+        batch: [
+          { id: 'lot', label: '批次号', req: true, ctrl: 'text' },
+          { id: 'parent', label: '父细胞', req: false, ctrl: 'text' },
+          { id: 'passage', label: '代次', req: false, ctrl: 'text' },
+          { id: 'src', label: '来源实验', req: false, ctrl: 'text', value: 'ELN-20260917-001', readonly: true }
+        ]
+      },
+      none: {
+        id: 'none',
+        label: '普通试剂（未配置映射）',
+        dual: false,
+        materialCode: 'RE-20260917-001',
+        shared: [
+          { id: 'mat_name', label: '物料名称', req: true, ctrl: 'text' },
+          { id: 'spec', label: '规格型号', req: false, ctrl: 'text' },
+          { id: 'unit', label: '计量单位', req: true, ctrl: 'select', options: ['mg', 'g', 'mL'] }
+        ],
+        objectExtra: [],
+        materialExtra: [],
+        batch: [
+          { id: 'lot', label: '批次号', req: true, ctrl: 'text' },
+          { id: 'src', label: '来源实验', req: false, ctrl: 'text', value: 'ELN-20260917-001', readonly: true }
+        ]
+      }
+    };
+
+    let current = 'product';
+    let showObjMore = false;
+    let showMatMore = false;
+    let containers = [];
+
+    function showToast(text) {
+      const el = document.getElementById('toast');
+      el.innerText = text;
+      el.classList.remove('hidden');
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(() => el.classList.add('hidden'), 1800);
+    }
+
+    function fieldHtml(f, prefix) {
+      const req = f.req ? 'req' : '';
+      const name = prefix + '_' + f.id;
+      let ctrl = '';
+      if (f.ctrl === 'select') {
+        const opts = (f.options || ['请选择']).map(o => `<option${f.value === o ? ' selected' : ''}>${o}</option>`).join('');
+        ctrl = `<select id="${name}" class="ant-ctrl focus-ring">${opts}</select>`;
+      } else if (f.ctrl === 'textarea') {
+        ctrl = `<textarea id="${name}" rows="2" class="ant-ctrl focus-ring" placeholder="${f.ph || '请输入'}">${f.value || ''}</textarea>`;
+      } else if (f.ctrl === 'switch') {
+        ctrl = `<label class="inline-flex items-center gap-2 h-8 text-sm"><input type="checkbox" id="${name}" class="accent-blue-600"> 是</label>`;
+      } else if (f.ctrl === 'file') {
+        ctrl = `<button type="button" class="ant-ctrl text-left text-gray-400">选择文件</button>`;
+      } else if (f.ctrl === 'date') {
+        ctrl = `<input type="date" id="${name}" class="ant-ctrl focus-ring">`;
+      } else {
+        const ro = f.readonly ? 'readonly' : '';
+        ctrl = `<input ${ro} id="${name}" class="ant-ctrl focus-ring" placeholder="${f.ph || '请输入'}" value="${f.value || ''}">`;
+      }
+      const sub = f.obj && f.obj !== f.label
+        ? `<div class="sub-label">同时写入对象：${f.obj}</div>`
+        : (f.system ? `<div class="sub-label">系统带出，可改</div>` : '');
+      return `<div class="mb-3" data-field="${f.id}">
+        <label class="block text-sm mb-1 ${req}">${f.label}</label>
+        ${ctrl}${sub}
+      </div>`;
+    }
+
+    function renderDrawer() {
+      const t = TYPES[current];
+      const typeOptions = Object.values(TYPES).map(x =>
+        `<option value="${x.id}" ${x.id === current ? 'selected' : ''}>${x.label}</option>`
+      ).join('');
+
+      let html = `
+        <label class="block text-sm mb-1 req">物料类型</label>
+        <select id="typeSelect" class="ant-ctrl focus-ring mb-3" onchange="onTypeChange(this.value)">${typeOptions}</select>
+      `;
+
+      if (t.dual) {
+        html += `<div class="dual-banner">将同时登记对象「${t.objectName}」与物料主数据。重叠字段只填一次。</div>
+        <div class="grid grid-cols-2 gap-3 mb-1">
+          <div>
+            <label class="block text-sm mb-1">对象编号</label>
+            <input class="ant-ctrl focus-ring" value="${t.objectCode}">
+            <div class="sub-label">按对象规则生成，可改</div>
+          </div>
+          <div>
+            <label class="block text-sm mb-1">物料编号</label>
+            <input class="ant-ctrl focus-ring" value="${t.materialCode}">
+            <div class="sub-label">按物料类型规则生成，不继承对象编号</div>
+          </div>
+        </div>`;
+      } else {
+        html += `<div class="weak-banner">该物料类型未配置对象映射，仅登记物料，不创建对象实体。</div>
+        <label class="block text-sm mb-1">物料编号</label>
+        <input class="ant-ctrl focus-ring mb-3" value="${t.materialCode}">`;
+      }
+
+      if (t.dual) {
+        html += `<div class="section-h">共用信息</div>
+          <div class="hint mb-2">已映射字段，写入对象 + 物料主数据</div>`;
+        t.shared.forEach(f => { html += fieldHtml(f, 's'); });
+      } else {
+        html += `<div class="section-h">基本信息</div>`;
+        t.shared.forEach(f => { html += fieldHtml(f, 's'); });
+      }
+
+      if (t.dual && t.objectExtra.length) {
+        const reqs = t.objectExtra.filter(f => f.req);
+        const opts = t.objectExtra.filter(f => !f.req);
+        html += `<div class="section-h">对象信息</div>
+          <div class="hint mb-2">未映射到物料的对象字段</div>`;
+        reqs.forEach(f => { html += fieldHtml(f, 'o'); });
+        if (opts.length) {
+          html += `<div class="more-link mb-2" onclick="toggleMore('obj')">${showObjMore ? '收起' : '更多对象信息（' + opts.length + '）'}</div>`;
+          html += `<div id="objMore" class="${showObjMore ? '' : 'hidden'}">`;
+          opts.forEach(f => { html += fieldHtml(f, 'o'); });
+          html += `</div>`;
+        }
+      }
+
+      if (t.dual && t.materialExtra.length) {
+        const reqs = t.materialExtra.filter(f => f.req);
+        const opts = t.materialExtra.filter(f => !f.req);
+        html += `<div class="section-h">物料其他信息</div>
+          <div class="hint mb-2">未映射的物料基础/扩展字段</div>`;
+        reqs.forEach(f => { html += fieldHtml(f, 'm'); });
+        if (opts.length) {
+          html += `<div class="more-link mb-2" onclick="toggleMore('mat')">${showMatMore ? '收起' : '更多物料信息（' + opts.length + '）'}</div>`;
+          html += `<div id="matMore" class="${showMatMore ? '' : 'hidden'}">`;
+          opts.forEach(f => { html += fieldHtml(f, 'm'); });
+          html += `</div>`;
+        }
+      }
+
+      html += `<div class="section-h">批次信息</div>
+        <div class="hint mb-2">不走映射，始终手填</div>`;
+      t.batch.forEach(f => { html += fieldHtml(f, 'b'); });
+
+      html += `<div class="section-h">存放信息</div>
+        <div class="grid grid-cols-2 gap-3 mb-3">
+          <div>
+            <label class="block text-sm mb-1 req">容器</label>
+            <select id="containerType" class="ant-ctrl focus-ring"><option>瓶</option><option>管</option><option>孔板</option></select>
+          </div>
+          <div>
+            <label class="block text-sm mb-1">仓库</label>
+            <select class="ant-ctrl focus-ring"><option>请选择</option><option>产物库 A</option><option>冷库</option></select>
+            <div class="sub-label">可空，库管上架时再指定</div>
+          </div>
+        </div>
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-sm">容器信息</span>
+          <button type="button" class="text-blue-600 text-sm" onclick="addContainer()">+ 新增</button>
+        </div>
+        <table class="mini">
+          <thead><tr><th>序号</th><th>容器编号</th><th>数量</th><th>单位</th><th></th></tr></thead>
+          <tbody id="cbody"></tbody>
+        </table>
+        <div id="cempty" class="text-center text-gray-400 text-sm py-3 border border-t-0 border-gray-100">暂无数据</div>
+      `;
+
+      document.getElementById('drawerBody').innerHTML = html;
+      renderContainers();
+    }
+
+    function renderContainers() {
+      const body = document.getElementById('cbody');
+      const empty = document.getElementById('cempty');
+      if (!body) return;
+      body.innerHTML = containers.map((c, i) => `
+        <tr>
+          <td>${i + 1}</td>
+          <td><input class="ant-ctrl" value="${c.code}" onchange="containers[${i}].code=this.value"></td>
+          <td><input class="ant-ctrl" value="${c.qty}" onchange="containers[${i}].qty=this.value"></td>
+          <td>${c.unit}</td>
+          <td><button class="text-red-500 text-xs" onclick="containers.splice(${i},1);renderContainers()">删除</button></td>
+        </tr>`).join('');
+      empty.classList.toggle('hidden', containers.length > 0);
+    }
+
+    function addContainer() {
+      const unitEl = document.getElementById('m_unit') || document.getElementById('s_unit');
+      const unit = unitEl ? unitEl.value : 'mg';
+      containers.push({ code: 'C' + String(containers.length + 1).padStart(3, '0'), qty: '', unit });
+      renderContainers();
+    }
+
+    function toggleMore(which) {
+      if (which === 'obj') showObjMore = !showObjMore;
+      else showMatMore = !showMatMore;
+      renderDrawer();
+    }
+
+    function onTypeChange(id) {
+      current = id;
+      showObjMore = false;
+      showMatMore = false;
+      containers = [];
+      renderDrawer();
+    }
+
+    function openDrawer() {
+      current = 'product';
+      showObjMore = false;
+      showMatMore = false;
+      containers = [];
+      document.getElementById('drawerRoot').classList.remove('hidden');
+      renderDrawer();
+    }
+
+    function closeDrawer() {
+      document.getElementById('drawerRoot').classList.add('hidden');
+    }
+
+    function saveDraft() {
+      showToast('已保存为草稿（原型，未落库）');
+      closeDrawer();
+    }
+
+    function val(id) {
+      const el = document.getElementById(id);
+      return el ? String(el.value || '').trim() : '';
+    }
+
+    function confirmInbound() {
+      const t = TYPES[current];
+      if (!val('s_mat_name')) { showToast('请填写物料名称'); return; }
+      if (!val('b_lot')) { showToast('请填写批次号'); return; }
+      if (!containers.length || containers.some(c => !c.qty)) { showToast('请至少新增一条容器并填写数量'); return; }
+      const name = val('s_mat_name');
+      const lot = val('b_lot');
+      document.getElementById('moduleEmpty').classList.add('hidden');
+      document.getElementById('moduleTable').classList.remove('hidden');
+      const tr = document.createElement('tr');
+      tr.className = 'border-t';
+      tr.innerHTML = `
+        <td class="px-4 py-2 text-blue-600">${t.dual ? t.objectCode : '—'}</td>
+        <td class="px-4 py-2">${t.materialCode}</td>
+        <td class="px-4 py-2">${name}</td>
+        <td class="px-4 py-2">${t.label}</td>
+        <td class="px-4 py-2">${lot}</td>
+        <td class="px-4 py-2"><span class="text-xs px-2 py-0.5 rounded bg-blue-50 text-blue-600">已登记 / 待上架</span></td>`;
+      document.getElementById('moduleBody').appendChild(tr);
+      showToast(t.dual ? '已同时创建对象与物料（原型）' : '已登记物料，未创建对象（原型）');
+      closeDrawer();
+    }
+  </script>
+</body>
+</html>
