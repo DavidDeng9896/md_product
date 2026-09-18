@@ -465,7 +465,7 @@
         <div class="font-medium">对象字段 <span class="text-xs text-gray-400 ml-2">Antibody Complex</span></div>
         <button class="text-gray-400 hover:text-gray-600" onclick="hideModal('fieldListModal')"><i class="ri-close-line text-lg"></i></button>
       </div>
-      <div class="px-5 py-3 text-xs text-gray-400">数字格式仍是「数字 / 百分比(%)」。科学单位走资源管理计量单位：字段可启用并设默认。百分比是格式，不进单位表。库存计量单位仍按物料类型带出，与字段单位不是一回事。</div>
+      <div class="px-5 py-3 text-xs text-gray-400">数字格式仍是「数字 / 百分比(%)」。科学单位：启用单位 → 单位类别 → 默认单位（系统预设类别，「其他」不可选）。百分比是格式，不进单位表。未设默认单位也可保存。库存计量单位仍按物料类型带出，与字段单位不是一回事。</div>
       <div class="px-5 pb-2 overflow-y-auto flex-1">
         <table class="w-full text-sm border-t">
           <thead class="bg-gray-50 text-gray-600 text-left">
@@ -543,11 +543,33 @@
     let editingNumberId = null;
 
     const UNIT_CATALOG = {
-      '质量': ['g', 'mg', 'µg', 'ng'],
-      '体积': ['L', 'mL', 'µL'],
-      '物质的量浓度': ['M', 'mM', 'µM', 'nM', 'mg/mL', 'µg/mL'],
-      '其他': ['IU', 'U']
+      '温度': ['°C', 'K', '°F'],
+      '质量': ['ng', 'μg', 'mg', 'g', 'kg'],
+      '体积': ['μL', 'mL', 'L'],
+      '物质的量': ['nmol', 'μmol', 'mmol', 'mol'],
+      '物质的量浓度': ['nM', 'μM', 'mM', 'M', 'mg/mL', 'μg/mL'],
+      '密度': ['g/mL', 'g/cm³', 'kg/m³'],
+      '长度': ['nm', 'μm', 'mm', 'cm', 'm'],
+      '面积': ['cm²', 'm²'],
+      '时间': ['s', 'min', 'h', 'd'],
+      '包装数量': ['支', '瓶', '袋', '盒', '管'],
+      '纯度': ['ppm', 'ppb', '‰'],
+      '其他': []
     };
+
+    function catOptionHtml(selected) {
+      return '<option value="">请选择</option>' + Object.keys(UNIT_CATALOG).map(c => {
+        const dis = c === '其他';
+        return '<option' + (c === selected ? ' selected' : '') + (dis ? ' disabled' : '') + '>' +
+          c + (dis ? '（不可选）' : '') + '</option>';
+      }).join('');
+    }
+    function unitOptionHtml(cat, selected) {
+      const units = UNIT_CATALOG[cat] || [];
+      return '<option value="">请选择</option>' + units.map(u =>
+        '<option' + (u === selected ? ' selected' : '') + '>' + u + '</option>'
+      ).join('');
+    }
 
     const OBJECT_NUMBER_FIELDS = [
       { id: 'name', name: '名称', kind: 'text', typeLabel: '文本', meta: '—' },
@@ -559,7 +581,7 @@
 
     function numberMeta(f) {
       if (f.format === 'percent') return '百分比(%)';
-      if (f.unitOn && f.unit) return '数字 · ' + f.unit;
+      if (f.unitOn) return '数字 · ' + (f.unit || '未设置');
       return '数字';
     }
 
@@ -589,10 +611,8 @@
       editingNumberId = id;
       const f = OBJECT_NUMBER_FIELDS.find(x => x.id === id);
       document.getElementById('nsTitle').innerText = f.name;
-      const cats = Object.keys(UNIT_CATALOG);
-      const cat = f.unitCat || cats[0];
-      const units = UNIT_CATALOG[cat] || [];
-      const unit = f.unit && units.includes(f.unit) ? f.unit : units[0];
+      const cat = (f.unitOn && f.unitCat) ? f.unitCat : '';
+      const unit = (cat && f.unit) ? f.unit : '';
       document.getElementById('nsBody').innerHTML =
         '<div class="setting-row"><label class="sl">格式</label><div class="flex-1">' +
           '<select id="nsFormat" class="ant-ctrl focus-ring" onchange="onNsFormatChange()">' +
@@ -611,17 +631,14 @@
         '<div id="nsUnitBlock">' +
           '<div class="setting-row"><label class="sl">启用单位</label><div class="flex-1">' +
             '<label class="sw"><input id="nsUnitOn" type="checkbox" class="accent-blue-600"' + (f.unitOn ? ' checked' : '') + ' onchange="onNsUnitOnChange()"> 接入资源管理计量单位</label>' +
-            '<div class="hint-xs">未启用则为裸数字。与物料浓度/含量同一套单位表</div></div></div>' +
+            '<div class="hint-xs">默认关闭。关闭时清空类别和默认单位。未设默认单位也可保存，摘要显示「未设置」</div></div></div>' +
           '<div id="nsUnitPick" class="' + (f.unitOn ? '' : 'hidden') + '">' +
             '<div class="setting-row"><label class="sl">单位类别</label><div class="flex-1">' +
-              '<select id="nsCat" class="ant-ctrl focus-ring" onchange="onNsCatChange()">' +
-                cats.map(c => '<option' + (c === cat ? ' selected' : '') + '>' + c + '</option>').join('') +
-              '</select></div></div>' +
+              '<select id="nsCat" class="ant-ctrl focus-ring" onchange="onNsCatChange()">' + catOptionHtml(cat) + '</select>' +
+              '<div class="hint-xs">系统预设类别；「其他」不可选</div></div></div>' +
             '<div class="setting-row"><label class="sl">默认单位</label><div class="flex-1">' +
-              '<select id="nsUnit" class="ant-ctrl focus-ring">' +
-                units.map(u => '<option' + (u === unit ? ' selected' : '') + '>' + u + '</option>').join('') +
-              '</select>' +
-              '<div class="hint-xs">注册时带出，用户可改这条数据的单位，不改字段默认</div></div></div>' +
+              '<select id="nsUnit" class="ant-ctrl focus-ring"' + (cat ? '' : ' disabled') + '>' + unitOptionHtml(cat, unit) + '</select>' +
+              '<div class="hint-xs">注册时带出；用户只改本条数据，且不跨类别</div></div></div>' +
           '</div>' +
         '</div>';
       onNsFormatChange();
@@ -638,13 +655,19 @@
     }
 
     function onNsUnitOnChange() {
-      document.getElementById('nsUnitPick').classList.toggle('hidden', !document.getElementById('nsUnitOn').checked);
+      const on = document.getElementById('nsUnitOn').checked;
+      document.getElementById('nsUnitPick').classList.toggle('hidden', !on);
+      if (!on) {
+        document.getElementById('nsCat').value = '';
+        onNsCatChange();
+      }
     }
 
     function onNsCatChange() {
       const cat = document.getElementById('nsCat').value;
-      const units = UNIT_CATALOG[cat] || [];
-      document.getElementById('nsUnit').innerHTML = units.map(u => '<option>' + u + '</option>').join('');
+      const sel = document.getElementById('nsUnit');
+      sel.innerHTML = unitOptionHtml(cat, '');
+      sel.disabled = !cat || !(UNIT_CATALOG[cat] || []).length;
     }
 
     function saveNumberSetting() {
@@ -702,11 +725,14 @@
         if (f.format === 'percent') {
           ctrl = '<div class="unit-combo"><input class="ant-ctrl focus-ring num" placeholder="请输入" value="' + val + '"><span class="unit-suffix">%</span></div>' +
             '<div class="hint-xs">百分比格式，无计量单位选择</div>';
-        } else if (f.unitOn && f.unit) {
-          const units = UNIT_CATALOG[f.unitCat] || [f.unit];
+        } else if (f.unitOn) {
+          const units = UNIT_CATALOG[f.unitCat] || [];
+          const opts = '<option value="">请选择单位</option>' + units.map(u =>
+            '<option' + (u === f.unit ? ' selected' : '') + '>' + u + '</option>'
+          ).join('');
           ctrl = '<div class="unit-combo"><input class="ant-ctrl focus-ring num" placeholder="请输入" value="' + val + '">' +
-            '<select class="ant-ctrl focus-ring unit">' + units.map(u => '<option' + (u === f.unit ? ' selected' : '') + '>' + u + '</option>').join('') + '</select></div>' +
-            '<div class="hint-xs">默认 ' + f.unit + '，可改本条数据单位</div>';
+            '<select class="ant-ctrl focus-ring unit"' + (units.length ? '' : ' disabled') + '>' + opts + '</select></div>' +
+            '<div class="hint-xs">' + (f.unit ? ('默认 ' + f.unit + '，可改本条，不跨类别') : '未设默认单位，请选择（限当前类别）') + '</div>';
         } else {
           ctrl = '<input class="ant-ctrl focus-ring" placeholder="请输入" value="' + val + '">' +
             '<div class="hint-xs">未启用单位，裸数字</div>';
