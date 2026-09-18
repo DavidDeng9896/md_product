@@ -58,7 +58,7 @@ md_product/
 
 ### 原型
 
-- [prototype/index.html](./registry/prototype/index.html) — 交互原型
+- [prototype/index.html](./registry/prototype/index.html) — 映射对照 + 对象数字字段计量单位（字段设置 / 注册录入）
 
 ---
 
