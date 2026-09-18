@@ -56,12 +56,20 @@
     }
     .block-card { border: 1px solid #f0f0f0; border-radius: 8px; padding: 14px 16px; margin-bottom: 14px; background: #fff; }
     .block-card.muted { background: #fafafa; }
+    .unit-combo { display: flex; align-items: stretch; }
+    .unit-combo .num { flex: 1 1 auto; min-width: 0; border-radius: 6px 0 0 6px; }
+    .unit-combo .unit { width: 108px; flex: 0 0 108px; border-radius: 0 6px 6px 0; border-left: 0; padding: 0 8px; }
+    .unit-combo .unit-suffix {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 40px; flex: 0 0 40px; border: 1px solid #d9d9d9; border-left: 0;
+      border-radius: 0 6px 6px 0; background: #fafafa; color: rgba(0,0,0,.65); font-size: 14px;
+    }
   </style>
 </head>
 <body class="bg-[#f5f5f5] text-gray-800 min-h-screen">
 
   <div class="proto-bar">
-    原型 · 先选对象，再选该对象已配置映射的物料类型。对象信息可改；物料侧共用字段置灰，跟随对象。
+    原型 · 先选对象，再选该对象已配置映射的物料类型。对象信息可改；物料侧共用字段置灰，跟随对象。浓度/含量带字段单位，纯度为百分比格式；库存计量单位仍单独一项。
   </div>
 
   <div class="max-w-[1100px] mx-auto px-4 py-5">
@@ -130,9 +138,9 @@
           { id: 'code', label: '对象编号', req: false, ctrl: 'text', value: 'AC-20260917-001', system: true },
           { id: 'alias', label: '别名', req: false, ctrl: 'text', map: 'alias' },
           { id: 'spec', label: '规格', req: false, ctrl: 'text', map: 'spec' },
-          { id: 'conc', label: '浓度', req: false, ctrl: 'number', map: 'conc' },
-          { id: 'purity', label: '纯度', req: false, ctrl: 'number', map: 'purity' },
-          { id: 'content', label: '含量', req: false, ctrl: 'number', map: 'content' },
+          { id: 'conc', label: '浓度', req: false, ctrl: 'number', map: 'conc', unitCat: 'conc', unit: 'mg/mL' },
+          { id: 'purity', label: '纯度', req: false, ctrl: 'percent', map: 'purity' },
+          { id: 'content', label: '含量', req: false, ctrl: 'number', map: 'content', unitCat: 'mass', unit: 'mg' },
           { id: 'maker', label: '生产厂家', req: false, ctrl: 'select', options: ['请选择', '内部制备', 'Sigma', 'Thermo'], map: 'maker' },
           { id: 'lookup_name', label: '通用名', req: false, ctrl: 'text', map: 'grade' },
           { id: 'storage', label: '储存条件', req: false, ctrl: 'select', options: ['请选择', '常温', '2-8℃', '-20℃', '-80℃'], map: 'storage' },
@@ -191,9 +199,9 @@
           { id: 'code', label: '物料编号', req: false, ctrl: 'text', value: 'HW-20260917-001', system: true },
           { id: 'alias', label: '别名', req: false, ctrl: 'text' },
           { id: 'spec', label: '规格型号', req: false, ctrl: 'text' },
-          { id: 'conc', label: '浓度', req: false, ctrl: 'number' },
-          { id: 'purity', label: '纯度', req: false, ctrl: 'number' },
-          { id: 'content', label: '含量', req: false, ctrl: 'number' },
+          { id: 'conc', label: '浓度', req: false, ctrl: 'number', unitCat: 'conc', unit: 'mg/mL' },
+          { id: 'purity', label: '纯度', req: false, ctrl: 'percent' },
+          { id: 'content', label: '含量', req: false, ctrl: 'number', unitCat: 'mass', unit: 'mg' },
           { id: 'unit', label: '计量单位', req: true, ctrl: 'select', options: ['mg', 'g', 'mL', '管'], value: 'mg', system: true },
           { id: 'maker', label: '生产厂家', req: false, ctrl: 'select', options: ['请选择', '内部制备', 'Sigma', 'Thermo'] },
           { id: 'grade', label: '级别', req: false, ctrl: 'text' },
@@ -236,6 +244,11 @@
       }
     };
 
+    const UNIT_OPTIONS = {
+      conc: ['nM', 'μM', 'mM', 'M', 'mg/mL', 'μg/mL'],
+      mass: ['ng', 'μg', 'mg', 'g', 'kg']
+    };
+
     let objectId = '';
     let materialId = '';
     let containers = [];
@@ -273,6 +286,14 @@
       }
       if (f.ctrl === 'date') {
         return `<input type="date" id="${id}" class="ant-ctrl focus-ring" ${readonly}>`;
+      }
+      if (f.ctrl === 'percent') {
+        return `<div class="unit-combo"><input ${readonly} id="${id}" class="ant-ctrl focus-ring num" placeholder="请输入" value="${f.value || ''}"><span class="unit-suffix">%</span></div>`;
+      }
+      if (f.unitCat) {
+        const units = UNIT_OPTIONS[f.unitCat] || [f.unit];
+        const optsHtml = units.map(u => `<option${u === f.unit ? ' selected' : ''}>${u}</option>`).join('');
+        return `<div class="unit-combo"><input ${readonly} id="${id}" class="ant-ctrl focus-ring num" placeholder="请输入" value="${f.value || ''}"><select id="${id}_unit" class="ant-ctrl focus-ring unit" ${linked ? 'disabled' : ''}>${optsHtml}</select></div>`;
       }
       return `<input ${readonly} id="${id}" class="ant-ctrl focus-ring" placeholder="${f.ph || '请输入'}" value="${f.value || ''}">`;
     }
@@ -405,10 +426,15 @@
         const copy = () => {
           if (src.type === 'checkbox') dst.checked = src.checked;
           else dst.value = src.value;
+          const su = document.getElementById(src.id + '_unit');
+          const du = document.getElementById(dst.id + '_unit');
+          if (su && du) du.value = su.value;
         };
         copy();
         src.addEventListener('input', copy);
         src.addEventListener('change', copy);
+        const suEl = document.getElementById(src.id + '_unit');
+        if (suEl) suEl.addEventListener('change', copy);
       });
     }
 

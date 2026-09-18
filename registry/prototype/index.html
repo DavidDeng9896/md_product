@@ -160,42 +160,9 @@
       border-radius: 6px;
       z-index: 80;
     }
-    .unit-combo { display: flex; align-items: stretch; }
-    .unit-combo .num { flex: 1 1 auto; min-width: 0; border-radius: 6px 0 0 6px; }
-    .unit-combo .unit { width: 112px; flex: 0 0 112px; border-radius: 0 6px 6px 0; border-left: 0; padding: 0 8px; }
-    .unit-combo .unit-suffix {
-      display: inline-flex; align-items: center; justify-content: center;
-      width: 44px; flex: 0 0 44px; border: 1px solid #d9d9d9; border-left: 0;
-      border-radius: 0 6px 6px 0; background: #fafafa; color: rgba(0,0,0,.65); font-size: 14px;
-    }
-    .setting-row { display: flex; align-items: flex-start; margin-bottom: 14px; }
-    .setting-row > label.sl { width: 96px; flex-shrink: 0; font-size: 14px; line-height: 32px; color: rgba(0,0,0,.88); }
-    .setting-row .sw { display: inline-flex; align-items: center; gap: 8px; height: 32px; font-size: 14px; }
-    .hint-xs { font-size: 12px; color: rgba(0,0,0,.45); margin-top: 4px; line-height: 16px; }
-    .proto-bar {
-      background: #fff7e6; border-bottom: 1px solid #ffd591;
-      color: #ad6800; font-size: 13px; padding: 8px 16px;
-      display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
-    }
-    .proto-bar a, .proto-bar button.link {
-      color: #d46b08; text-decoration: underline; background: none; border: none;
-      padding: 0; cursor: pointer; font-size: 13px;
-    }
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 20px; }
-    .reg-item label { display: block; font-size: 14px; color: rgba(0,0,0,.88); margin-bottom: 8px; }
   </style>
 </head>
 <body class="bg-white text-gray-800 min-h-screen">
-
-  <div class="proto-bar">
-    <span>原型 · 对象数字字段计量单位：百分比仍是格式；科学单位走资源管理计量单位，字段可启用并设默认。</span>
-    <span class="flex items-center gap-3">
-      <button type="button" class="link" onclick="openFieldList()">字段设置</button>
-      <button type="button" class="link" onclick="openFieldList(); openNumberSetting('conc')">浓度设置</button>
-      <button type="button" class="link" onclick="openFieldList(); openRegisterPreview()">注册录入</button>
-      <button type="button" class="link" onclick="openFieldMapping('material','none')">物料映射</button>
-    </span>
-  </div>
 
   <!-- ===== 主内容 ===== -->
     <main class="px-5 py-4">
@@ -237,7 +204,7 @@
               <td class="p-3 text-gray-500">2026-01-16 16:13</td>
               <td class="p-3 text-gray-500">david001</td>
               <td class="p-3 text-gray-500">2026-01-16 16:13</td>
-              <td class="p-3 text-blue-600 whitespace-nowrap"><span class="cursor-pointer hover:underline" onclick="openFieldList()">编辑</span> <span class="cursor-pointer hover:underline ml-2">停用</span> <span class="cursor-pointer hover:underline ml-2 text-red-600">删除</span></td>
+              <td class="p-3 text-blue-600 whitespace-nowrap"><span class="cursor-pointer hover:underline">编辑</span> <span class="cursor-pointer hover:underline ml-2">停用</span> <span class="cursor-pointer hover:underline ml-2 text-red-600">删除</span></td>
             </tr>
             <tr class="border-b row">
               <td class="p-3">Transfection Protein</td>
@@ -410,7 +377,7 @@
 
         <div id="autoWriteTip" class="hidden items-start gap-2 bg-blue-50 text-blue-700 text-sm px-4 py-2.5 rounded-md mt-3">
           <i class="ri-information-line mt-0.5"></i>
-          <span><span class="font-medium">系统自动写入，无需在此匹配：</span>物料编号（自动生成，可改）、注册数据（指向源对象实体）、<b>库存</b>计量单位/计量小数位（按物料类型带出）。浓度/含量/纯度上的字段单位仍走对照，与库存单位不是一回事。</span>
+          <span><span class="font-medium">系统自动写入，无需在此匹配：</span>物料编号（自动生成，可改）、注册数据（指向源对象实体）、计量单位/计量小数位（按物料类型带出）。</span>
         </div>
 
         <table id="pairMapTable" class="map-table mt-4">
@@ -458,68 +425,6 @@
     </div>
   </div>
 
-  <!-- ===== 对象字段列表（数字单位配置入口） ===== -->
-  <div id="fieldListModal" class="fixed inset-0 modal-backdrop hidden items-center justify-center z-50">
-    <div class="bg-white rounded-lg shadow-xl w-[920px] max-w-[95vw] max-h-[90vh] flex flex-col">
-      <div class="flex items-center justify-between px-5 py-3 border-b shrink-0">
-        <div class="font-medium">对象字段 <span class="text-xs text-gray-400 ml-2">Antibody Complex</span></div>
-        <button class="text-gray-400 hover:text-gray-600" onclick="hideModal('fieldListModal')"><i class="ri-close-line text-lg"></i></button>
-      </div>
-      <div class="px-5 py-3 text-xs text-gray-400">数字格式仍是「数字 / 百分比(%)」。科学单位：启用单位 → 单位类别 → 默认单位（系统预设类别，「其他」不可选）。百分比是格式，不进单位表。未设默认单位也可保存。库存计量单位仍按物料类型带出，与字段单位不是一回事。</div>
-      <div class="px-5 pb-2 overflow-y-auto flex-1">
-        <table class="w-full text-sm border-t">
-          <thead class="bg-gray-50 text-gray-600 text-left">
-            <tr>
-              <th class="p-3">字段名称</th>
-              <th class="p-3">字段类型</th>
-              <th class="p-3">格式 / 单位</th>
-              <th class="p-3">必填</th>
-              <th class="p-3">操作</th>
-            </tr>
-          </thead>
-          <tbody id="fieldListBody"></tbody>
-        </table>
-      </div>
-      <div class="border-t px-5 py-2.5 flex justify-end gap-2 shrink-0">
-        <button class="border btn-plain px-4 h-8 rounded-md text-sm" onclick="openRegisterPreview()">预览注册录入</button>
-        <button class="bg-[#1677ff] btn-primary text-white px-4 h-8 rounded-md text-sm" onclick="hideModal('fieldListModal')">完成</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== 数字字段设置 ===== -->
-  <div id="numberSettingModal" class="fixed inset-0 modal-backdrop hidden items-center justify-center z-[60]">
-    <div class="bg-white rounded-lg shadow-xl w-[480px] max-w-[95vw]">
-      <div class="flex items-center justify-between px-5 py-3 border-b">
-        <div class="font-medium">字段设置 · <span id="nsTitle">数字</span></div>
-        <button class="text-gray-400 hover:text-gray-600" onclick="hideModal('numberSettingModal')"><i class="ri-close-line text-lg"></i></button>
-      </div>
-      <div class="px-5 py-4" id="nsBody"></div>
-      <div class="px-5 py-3 flex justify-end gap-2 border-t">
-        <button class="border btn-plain px-4 py-1.5 rounded-md text-sm" onclick="hideModal('numberSettingModal')">取消</button>
-        <button class="bg-[#1677ff] btn-primary text-white px-4 py-1.5 rounded-md text-sm" onclick="saveNumberSetting()">确认</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== 注册录入预览 ===== -->
-  <div id="registerPreviewModal" class="fixed inset-0 modal-backdrop hidden items-center justify-center z-[60]">
-    <div class="bg-white rounded-lg shadow-xl w-[720px] max-w-[95vw]">
-      <div class="flex items-center justify-between px-5 py-3 border-b">
-        <div class="font-medium">注册 · Antibody Complex <span class="text-xs text-gray-400 font-normal ml-1">录入预览</span></div>
-        <button class="text-gray-400 hover:text-gray-600" onclick="hideModal('registerPreviewModal')"><i class="ri-close-line text-lg"></i></button>
-      </div>
-      <div class="px-5 py-4">
-        <div class="text-xs text-gray-400 mb-3">启用单位的数字：数值框 + 单位下拉，带出字段默认单位，本条可改。百分比只有 % 后缀，无单位选择。</div>
-        <div class="grid-2" id="regBody"></div>
-      </div>
-      <div class="px-5 py-3 flex justify-end gap-2 border-t">
-        <button class="border btn-plain px-4 py-1.5 rounded-md text-sm" onclick="hideModal('registerPreviewModal')">取消</button>
-        <button class="bg-[#1677ff] btn-primary text-white px-4 py-1.5 rounded-md text-sm" onclick="showToast('原型：数值与单位一并保存'); hideModal('registerPreviewModal')">确认</button>
-      </div>
-    </div>
-  </div>
-
   <div id="confirmModal" class="fixed inset-0 modal-backdrop hidden items-center justify-center z-[70]">
     <div class="bg-white rounded-lg shadow-xl w-[400px] max-w-[92vw]">
       <div class="flex items-center justify-between px-5 py-3 border-b">
@@ -540,208 +445,6 @@
     let lastMappingType = 'object';
     let suppressTypeChange = false;
     let confirmResolver = null;
-    let editingNumberId = null;
-
-    const UNIT_CATALOG = {
-      '温度': ['°C', 'K', '°F'],
-      '质量': ['ng', 'μg', 'mg', 'g', 'kg'],
-      '体积': ['μL', 'mL', 'L'],
-      '物质的量': ['nmol', 'μmol', 'mmol', 'mol'],
-      '物质的量浓度': ['nM', 'μM', 'mM', 'M', 'mg/mL', 'μg/mL'],
-      '密度': ['g/mL', 'g/cm³', 'kg/m³'],
-      '长度': ['nm', 'μm', 'mm', 'cm', 'm'],
-      '面积': ['cm²', 'm²'],
-      '时间': ['s', 'min', 'h', 'd'],
-      '包装数量': ['支', '瓶', '袋', '盒', '管'],
-      '纯度': ['ppm', 'ppb', '‰'],
-      '其他': []
-    };
-
-    function catOptionHtml(selected) {
-      return '<option value="">请选择</option>' + Object.keys(UNIT_CATALOG).map(c => {
-        const dis = c === '其他';
-        return '<option' + (c === selected ? ' selected' : '') + (dis ? ' disabled' : '') + '>' +
-          c + (dis ? '（不可选）' : '') + '</option>';
-      }).join('');
-    }
-    function unitOptionHtml(cat, selected) {
-      const units = UNIT_CATALOG[cat] || [];
-      return '<option value="">请选择</option>' + units.map(u =>
-        '<option' + (u === selected ? ' selected' : '') + '>' + u + '</option>'
-      ).join('');
-    }
-
-    const OBJECT_NUMBER_FIELDS = [
-      { id: 'name', name: '名称', kind: 'text', typeLabel: '文本', meta: '—' },
-      { id: 'conc', name: '浓度', kind: 'number', format: 'number', decimals: '2位', unitOn: true, unitCat: '物质的量浓度', unit: 'mg/mL', defaultValue: '', required: false },
-      { id: 'purity', name: '纯度', kind: 'number', format: 'percent', decimals: '2位', unitOn: false, unitCat: '', unit: '', defaultValue: '', required: false },
-      { id: 'content', name: '含量', kind: 'number', format: 'number', decimals: '2位', unitOn: true, unitCat: '质量', unit: 'mg', defaultValue: '', required: false },
-      { id: 'chains', name: 'Chain Count', kind: 'number', format: 'number', decimals: '整数', unitOn: false, unitCat: '', unit: '', defaultValue: '', required: false }
-    ];
-
-    function numberMeta(f) {
-      if (f.format === 'percent') return '百分比(%)';
-      if (f.unitOn) return '数字 · ' + (f.unit || '未设置');
-      return '数字';
-    }
-
-    function openFieldList() {
-      closeAll();
-      renderFieldList();
-      showModal('fieldListModal');
-    }
-
-    function renderFieldList() {
-      const body = document.getElementById('fieldListBody');
-      body.innerHTML = OBJECT_NUMBER_FIELDS.map(f => {
-        const type = f.kind === 'text' ? '文本' : '数字';
-        const action = f.kind === 'number'
-          ? '<span class="text-blue-600 cursor-pointer hover:underline inline-flex items-center gap-1" onclick="openNumberSetting(\'' + f.id + '\')"><i class="ri-settings-3-line"></i>设置</span>'
-          : '<span class="text-gray-300">—</span>';
-        return '<tr class="border-b row">' +
-          '<td class="p-3">' + f.name + '</td>' +
-          '<td class="p-3 text-gray-500">' + type + '</td>' +
-          '<td class="p-3 text-gray-500">' + (f.kind === 'number' ? numberMeta(f) : f.meta) + '</td>' +
-          '<td class="p-3 text-gray-400">' + (f.required ? '是' : '否') + '</td>' +
-          '<td class="p-3">' + action + '</td></tr>';
-      }).join('');
-    }
-
-    function openNumberSetting(id) {
-      editingNumberId = id;
-      const f = OBJECT_NUMBER_FIELDS.find(x => x.id === id);
-      document.getElementById('nsTitle').innerText = f.name;
-      const cat = (f.unitOn && f.unitCat) ? f.unitCat : '';
-      const unit = (cat && f.unit) ? f.unit : '';
-      document.getElementById('nsBody').innerHTML =
-        '<div class="setting-row"><label class="sl">格式</label><div class="flex-1">' +
-          '<select id="nsFormat" class="ant-ctrl focus-ring" onchange="onNsFormatChange()">' +
-            '<option value="number"' + (f.format === 'number' ? ' selected' : '') + '>数字</option>' +
-            '<option value="percent"' + (f.format === 'percent' ? ' selected' : '') + '>百分比(%)</option>' +
-          '</select>' +
-          '<div class="hint-xs">百分比是显示格式，不走计量单位</div></div></div>' +
-        '<div class="setting-row"><label class="sl">小数位</label><div class="flex-1">' +
-          '<select id="nsDecimals" class="ant-ctrl focus-ring">' +
-            ['整数','不限位数','1位','2位','3位','4位','5位'].map(d =>
-              '<option' + (f.decimals === d ? ' selected' : '') + '>' + d + '</option>'
-            ).join('') +
-          '</select></div></div>' +
-        '<div class="setting-row"><label class="sl">默认值</label><div class="flex-1">' +
-          '<input id="nsDefault" class="ant-ctrl focus-ring" placeholder="选填" value="' + (f.defaultValue || '') + '"></div></div>' +
-        '<div id="nsUnitBlock">' +
-          '<div class="setting-row"><label class="sl">启用单位</label><div class="flex-1">' +
-            '<label class="sw"><input id="nsUnitOn" type="checkbox" class="accent-blue-600"' + (f.unitOn ? ' checked' : '') + ' onchange="onNsUnitOnChange()"> 接入资源管理计量单位</label>' +
-            '<div class="hint-xs">默认关闭。关闭时清空类别和默认单位。未设默认单位也可保存，摘要显示「未设置」</div></div></div>' +
-          '<div id="nsUnitPick" class="' + (f.unitOn ? '' : 'hidden') + '">' +
-            '<div class="setting-row"><label class="sl">单位类别</label><div class="flex-1">' +
-              '<select id="nsCat" class="ant-ctrl focus-ring" onchange="onNsCatChange()">' + catOptionHtml(cat) + '</select>' +
-              '<div class="hint-xs">系统预设类别；「其他」不可选</div></div></div>' +
-            '<div class="setting-row"><label class="sl">默认单位</label><div class="flex-1">' +
-              '<select id="nsUnit" class="ant-ctrl focus-ring"' + (cat ? '' : ' disabled') + '>' + unitOptionHtml(cat, unit) + '</select>' +
-              '<div class="hint-xs">注册时带出；用户只改本条数据，且不跨类别</div></div></div>' +
-          '</div>' +
-        '</div>';
-      onNsFormatChange();
-      showModal('numberSettingModal');
-    }
-
-    function onNsFormatChange() {
-      const isNum = document.getElementById('nsFormat').value === 'number';
-      document.getElementById('nsUnitBlock').classList.toggle('hidden', !isNum);
-      if (!isNum) {
-        document.getElementById('nsUnitOn').checked = false;
-        document.getElementById('nsUnitPick').classList.add('hidden');
-      }
-    }
-
-    function onNsUnitOnChange() {
-      const on = document.getElementById('nsUnitOn').checked;
-      document.getElementById('nsUnitPick').classList.toggle('hidden', !on);
-      if (!on) {
-        document.getElementById('nsCat').value = '';
-        onNsCatChange();
-      }
-    }
-
-    function onNsCatChange() {
-      const cat = document.getElementById('nsCat').value;
-      const sel = document.getElementById('nsUnit');
-      sel.innerHTML = unitOptionHtml(cat, '');
-      sel.disabled = !cat || !(UNIT_CATALOG[cat] || []).length;
-    }
-
-    function saveNumberSetting() {
-      const f = OBJECT_NUMBER_FIELDS.find(x => x.id === editingNumberId);
-      f.format = document.getElementById('nsFormat').value;
-      f.decimals = document.getElementById('nsDecimals').value;
-      f.defaultValue = document.getElementById('nsDefault').value;
-      if (f.format === 'percent') {
-        f.unitOn = false;
-        f.unitCat = '';
-        f.unit = '';
-      } else {
-        f.unitOn = document.getElementById('nsUnitOn').checked;
-        if (f.unitOn) {
-          f.unitCat = document.getElementById('nsCat').value;
-          f.unit = document.getElementById('nsUnit').value;
-        } else {
-          f.unitCat = '';
-          f.unit = '';
-        }
-      }
-      hideModal('numberSettingModal');
-      renderFieldList();
-      syncObjectSourceUnits();
-      showToast('字段设置已保存（原型）');
-    }
-
-    function typeDisplay(f) {
-      if (!f) return '—';
-      if (f.format === 'percent') return '百分比(%)';
-      const base = f.type || (f.kind === 'number' ? '数字' : f.kind === 'text' ? '文本' : '');
-      if (f.unit) return (base || '数字') + ' · ' + f.unit;
-      return base || '—';
-    }
-
-    function syncObjectSourceUnits() {
-      OBJECT_NUMBER_FIELDS.forEach(f => {
-        const src = OBJECT_SOURCES_FOR_MATERIAL.find(s => s.id === f.id);
-        if (!src) return;
-        if (f.format === 'percent') {
-          src.format = 'percent';
-          delete src.unit;
-        } else {
-          src.format = 'number';
-          if (f.unitOn && f.unit) src.unit = f.unit;
-          else delete src.unit;
-        }
-      });
-    }
-
-    function openRegisterPreview() {
-      const rows = OBJECT_NUMBER_FIELDS.filter(f => f.kind === 'number').map(f => {
-        const val = f.defaultValue || '';
-        let ctrl = '';
-        if (f.format === 'percent') {
-          ctrl = '<div class="unit-combo"><input class="ant-ctrl focus-ring num" placeholder="请输入" value="' + val + '"><span class="unit-suffix">%</span></div>' +
-            '<div class="hint-xs">百分比格式，无计量单位选择</div>';
-        } else if (f.unitOn) {
-          const units = UNIT_CATALOG[f.unitCat] || [];
-          const opts = '<option value="">请选择单位</option>' + units.map(u =>
-            '<option' + (u === f.unit ? ' selected' : '') + '>' + u + '</option>'
-          ).join('');
-          ctrl = '<div class="unit-combo"><input class="ant-ctrl focus-ring num" placeholder="请输入" value="' + val + '">' +
-            '<select class="ant-ctrl focus-ring unit"' + (units.length ? '' : ' disabled') + '>' + opts + '</select></div>' +
-            '<div class="hint-xs">' + (f.unit ? ('默认 ' + f.unit + '，可改本条，不跨类别') : '未设默认单位，请选择（限当前类别）') + '</div>';
-        } else {
-          ctrl = '<input class="ant-ctrl focus-ring" placeholder="请输入" value="' + val + '">' +
-            '<div class="hint-xs">未启用单位，裸数字</div>';
-        }
-        return '<div class="reg-item"><label>' + f.name + '</label>' + ctrl + '</div>';
-      }).join('');
-      document.getElementById('regBody').innerHTML = rows;
-      showModal('registerPreviewModal');
-    }
 
     const FIELD_MAP = {
       object: {
@@ -768,7 +471,7 @@
         { id: 'alias', name: '别名', type: '文本' },
         { id: 'spec', name: '规格型号', type: '文本' },
         { id: 'conc', name: '浓度', type: '数值', unit: 'mg/mL' },
-        { id: 'purity', name: '纯度', type: '数值', format: 'percent' },
+        { id: 'purity', name: '纯度', type: '数值', unit: '%' },
         { id: 'content', name: '含量', type: '数值', unit: 'mg' },
         { id: 'maker', name: '生产厂家', type: '列表' },
         { id: 'grade', name: '级别', type: '文本' },
@@ -796,7 +499,7 @@
       { id: 'alias', name: '别名', type: '文本' },
       { id: 'spec', name: '规格', type: '文本' },
       { id: 'conc', name: '浓度', type: '数字', unit: 'mg/mL' },
-      { id: 'purity', name: '纯度', type: '数字', format: 'percent' },
+      { id: 'purity', name: '纯度', type: '数字', unit: '%' },
       { id: 'content', name: '含量', type: '数字', unit: 'mg' },
       { id: 'maker', name: '生产厂家', type: '下拉选择' },
       { id: 'storage', name: '储存条件', type: '下拉选择' },
@@ -848,7 +551,7 @@
       document.getElementById(id).classList.remove('flex');
     }
     function closeAll() {
-      ['mappingListModal', 'mappingTypeModal', 'fieldMappingModal', 'fieldListModal', 'numberSettingModal', 'registerPreviewModal'].forEach(hideModal);
+      ['mappingListModal', 'mappingTypeModal', 'fieldMappingModal'].forEach(hideModal);
     }
     function askConfirm(title, msg) {
       document.getElementById('confirmTitle').innerText = title;
@@ -1039,7 +742,7 @@
       return [{ value: '', label: '不设置' }].concat(currentCatalog().sources.map(s => ({
         value: s.id,
         label: s.name,
-        hint: typeDisplay(s),
+        hint: s.unit ? (s.type + ' · ' + s.unit) : s.type,
         disabled: (used.includes(s.id) && exceptBtn.dataset.value !== s.id) ||
           (restrictCalc && isCalcType(s.type) && !allowsCalcSource(targetType))
       })));
@@ -1052,7 +755,7 @@
       btn.dataset.value = id;
       btn.innerHTML = '<span class="dd-label">' + (picked ? picked.name : '不设置') + '</span><i class="ri-arrow-down-s-line"></i>';
       const typeCell = btn.closest('tr').querySelector('.src-type');
-      typeCell.textContent = picked ? typeDisplay(picked) : '—';
+      typeCell.textContent = picked ? (picked.unit ? picked.type + ' · ' + picked.unit : picked.type) : '—';
       btn.closest('tr').classList.toggle('is-skip', !id);
     }
     function bindSourceFieldBtn(btn) {
@@ -1097,7 +800,7 @@
           '<td class="source-cell"><button type="button" class="ant-ctrl source-field" aria-haspopup="listbox" aria-label="为 ' + t.name + ' 选择源字段"></button></td>' +
           '<td class="src-type">—</td>' +
           '<td class="split">' + t.name + '</td>' +
-          '<td>' + typeDisplay(t) + '</td></tr>';
+          '<td>' + t.type + (t.unit ? ' · ' + t.unit : '') + '</td></tr>';
       }).join('');
       body.querySelectorAll('.source-field').forEach((btn, i) => {
         btn.dataset.targetType = cat.targets[i].type;
@@ -1124,7 +827,7 @@
         document.getElementById('rightPaneTitle').innerText = '注册库 (当前对象模型)';
       }
       document.getElementById('pairHint').innerText = isMaterial
-        ? '物料对照：右侧物料字段。左侧选当前对象字段。浓度/含量为数字+单位成对映射；纯度为百分比格式。对象计算字段可映到文本或数值，不能作为写入目标。'
+        ? '物料对照：右侧物料字段。左侧选当前对象字段。浓度/含量/纯度为数字+单位成对映射。对象计算字段可映到文本或数值，不能作为写入目标。'
         : '同一行即一对映射。右侧为当前对象全部字段；左侧选择源字段，不需要的选「不设置」。';
       renderFieldMap();
     }
@@ -1148,16 +851,12 @@
       switchMappingType();
       bindSourceObjectBtn();
       bindMaterialTypeBtn();
-      syncObjectSourceUnits();
       const h = location.hash;
       if (h === '#mapping-config') openFieldMapping('object', 'none');
       else if (h === '#mapping-config-material') openFieldMapping('material', 'none');
       else if (h === '#mapping-list') openMappingList();
       else if (h === '#mapping-list-empty') openMappingList(true);
       else if (h === '#new-mapping') openMappingTypeSelect();
-      else if (h === '#fields' || h === '#number-unit') openFieldList();
-      else if (h === '#number-setting') { openFieldList(); openNumberSetting('conc'); }
-      else if (h === '#register') { openFieldList(); openRegisterPreview(); }
     });
   </script>
 </body>
