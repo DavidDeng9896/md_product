@@ -79,7 +79,7 @@ md_product/
 
 ### 原型
 
-- [eln/prototype/样品库.html](./eln/prototype/样品库.html) — 样品库列表、详情、请验 / 入库 / 留样 / 销毁。界面沿用样品池原型。
+- [eln/prototype/样品库.html](./eln/prototype/样品库.html) — 样品库、产出登记、注册对象联动。产出登记只写对象和产出量；待审批对象仅归属人可见，且不能请验、实验使用或入库。
 
 ---
 

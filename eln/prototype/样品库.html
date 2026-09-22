@@ -44,7 +44,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hira
 .submenu-item.active{color:var(--primary);background:var(--primary-light);border-left-color:var(--primary);font-weight:500;}
 .main{flex:1;display:flex;flex-direction:column;min-width:0;}
 .tabs{height:var(--tab-h);background:#fff;display:flex;align-items:center;border-bottom:1px solid var(--border-light);padding:0 8px;gap:2px;}
-.tab{display:flex;align-items:center;gap:8px;padding:0 14px;height:32px;font-size:13px;color:var(--text-regular);background:#f5f7fa;border-radius:4px;}
+.tab{display:flex;align-items:center;gap:8px;padding:0 14px;height:32px;font-size:13px;color:var(--text-regular);background:#f5f7fa;border-radius:4px;cursor:pointer;}
 .tab.active{background:var(--primary-light);color:var(--primary);font-weight:500;}
 .content{flex:1;overflow:auto;background:#fff;margin:8px;border-radius:4px;}
 .demo-note{margin:12px 16px 0;padding:8px 12px;background:#f2f9ff;border:1px solid #d6e8ff;border-radius:4px;font-size:12px;color:var(--text-regular);line-height:1.6;}
@@ -76,6 +76,7 @@ table.el-table tbody tr:hover{background:#fafcff;}
 .tag-ok{color:#67c23a;border-color:#c2e7b0;background:#f0f9eb;}
 .tag-end{color:#909399;border-color:#e4e7ed;background:#f4f4f5;}
 .tag-dead{color:#ed4014;border-color:#fbc4c4;background:#fef0f0;}
+.tag-wait{color:#e6a23c;border-color:#f5dab1;background:#fdf6ec;}
 .pagination{display:flex;justify-content:flex-end;gap:10px;padding:4px 16px 16px;font-size:13px;color:var(--text-regular);}
 .detail-head{display:flex;align-items:center;gap:12px;padding:14px 16px 0;}
 .detail-head h2{font-size:16px;font-weight:600;}
@@ -120,7 +121,7 @@ table.el-table tbody tr:hover{background:#fafcff;}
     <div class="topbar-item">发起审批</div>
     <span class="topbar-icon ri-apps-2-line"></span>
     <span class="topbar-icon ri-mail-line"><span class="topbar-badge">587</span></span>
-    <div class="topbar-user"><span class="avatar ri-user-line"></span><span>邓小伟</span><span class="ri-arrow-down-s-line"></span></div>
+    <div class="topbar-user"><span class="avatar ri-user-line"></span><span id="who">邓小伟</span><span class="ri-arrow-down-s-line"></span></div>
   </div>
 </header>
 <div class="layout">
@@ -146,7 +147,11 @@ table.el-table tbody tr:hover{background:#fafcff;}
     <div class="submenu-item active">样品库</div>
   </aside>
   <div class="main">
-    <div class="tabs"><div class="tab active"><span class="ri-flask-line"></span> 样品库</div></div>
+    <div class="tabs">
+      <div class="tab active" data-scene="lib" onclick="setScene('lib')"><span class="ri-flask-line"></span> 样品库</div>
+      <div class="tab" data-scene="out" onclick="setScene('out')"><span class="ri-inbox-archive-line"></span> 产出登记</div>
+      <div class="tab" data-scene="reg" onclick="setScene('reg')"><span class="ri-database-2-line"></span> 注册对象</div>
+    </div>
     <div class="content" id="view"></div>
   </div>
 </div>
@@ -161,12 +166,37 @@ table.el-table tbody tr:hover{background:#fafcff;}
 </div>
 <div class="toast" id="toast"></div>
 <script>
-const ME = '邓小伟';
+const viewers = [
+  {id:'me', name:'邓小伟', short:'邓小伟', role:'user', projects:['DL34-012'], dept:'合成部'},
+  {id:'peer', name:'李明', short:'李明 · 同项目', role:'user', projects:['DL34-012'], dept:'合成部'},
+  {id:'admin', name:'管理授权', short:'管理授权', role:'admin', projects:[], dept:''}
+];
+let viewerId = 'me';
 let seq = 20;
+let objSeq = 8;
 let currentId = null;
 let view = 'list';
+let scene = 'lib';
 let detailTab = 'flow';
 const filters = { q:'', source:'', status:'' };
+
+let objects = [
+  {code:'AB-2026-0018', name:'抗体中间体 A', model:'化合物产物', status:'有效', owner:'邓小伟', project:'DL34-012', dept:'合成部', projectVisible:true, deptVisible:false},
+  {code:'PL-2026-0042', name:'质粒 pUC-X', model:'参考序列', status:'有效', owner:'林加旗', project:'DL34-012', dept:'合成部', projectVisible:true, deptVisible:false},
+  {code:'CE-2026-0007', name:'细胞株 HEK', model:'化合物产物', status:'有效', owner:'王敏', project:'DL34-019', dept:'细胞部', projectVisible:false, deptVisible:false},
+  {code:'AB-2026-0003', name:'抗体成品 B', model:'化合物产物', status:'有效', owner:'邓小伟', project:'DL34-012', dept:'合成部', projectVisible:false, deptVisible:false},
+  {code:'RG-2026-0011', name:'参比品', model:'化合物产物', status:'有效', owner:'陈立', project:'DL34-008', dept:'分析部', projectVisible:false, deptVisible:false},
+  {code:'SP-2026-0020', name:'留样对照', model:'化合物产物', status:'有效', owner:'邓小伟', project:'DL34-012', dept:'合成部', projectVisible:false, deptVisible:false},
+  {code:'CMP-20260921-008', name:'待审批中间体', model:'化合物产物', status:'待审批', owner:'邓小伟', project:'DL34-012', dept:'合成部', projectVisible:false, deptVisible:false},
+  {code:'NW-2026-0090', name:'新注册化合物 N', model:'化合物产物', status:'有效', owner:'邓小伟', project:'DL34-012', dept:'合成部', projectVisible:false, deptVisible:false}
+];
+
+let tasks = [
+  {no:'SYN-014', exp:'EXP-20260922-014', model:'化合物产物', workflow:true, status:'待交货', owner:'邓小伟', project:'DL34-012', dept:'合成部', objectCode:null},
+  {no:'SYN-021', exp:'EXP-20260922-021', model:'参考序列', workflow:false, status:'待交货', owner:'邓小伟', project:'DL34-012', dept:'合成部', objectCode:null},
+  {no:'SYN-009', exp:'EXP-20260921-009', model:'化合物产物', workflow:true, status:'已交货', owner:'邓小伟', project:'DL34-012', dept:'合成部', objectCode:'CMP-20260921-008'},
+  {no:'SYN-003', exp:'EXP-20260921-003', model:'参考序列', workflow:false, status:'已交货', owner:'林加旗', project:'DL34-012', dept:'合成部', objectCode:'PL-2026-0042'}
+];
 
 let samples = [
   {
@@ -233,15 +263,40 @@ let samples = [
       {time:'2026-09-17 13:10', type:'登记', qty:'2 g', before:'—', after:'2 g', to:'EXP-20260917-002'},
       {time:'2026-09-17 13:12', type:'留样', qty:'2 g', before:'2 g', after:'2 g', to:'—'}
     ]
+  },
+  {
+    code:'CMP-20260921-008', name:'待审批中间体', source:'实验产出', ref:'EXP-20260921-009',
+    owner:'邓小伟', project:'DL34-012', unit:'g', output:6, unstocked:6, retained:0, inbound:0, inventory:0,
+    destroyed:false, containers:[], requests:[],
+    flows:[{time:'2026-09-21 18:06', type:'登记', qty:'6 g', before:'—', after:'6 g', to:'EXP-20260921-009'}]
   }
 ];
 
-const registryPool = [
-  {code:'AB-2026-0018', name:'抗体中间体 A'},
-  {code:'NW-2026-0090', name:'新注册化合物 N'},
-  {code:'CE-2026-0007', name:'细胞株 HEK'}
-];
-
+function currentViewer(){ return viewers.find(v=>v.id===viewerId); }
+function objOf(s){ return objects.find(o=>o.code===s.code); }
+function canSeeObject(o){
+  const v = currentViewer();
+  if(!o) return false;
+  if(v.role==='admin' || o.owner===v.name) return true;
+  if(o.status!=='有效') return false;
+  if(o.projectVisible && v.projects.includes(o.project)) return true;
+  if(o.deptVisible && v.dept===o.dept) return true;
+  return false;
+}
+function canSee(s){ return canSeeObject(objOf(s)); }
+function canSeeTask(t){
+  const v = currentViewer();
+  if(v.role==='admin' || t.owner===v.name) return true;
+  if(!t.objectCode) return false;
+  return canSeeObject(objects.find(o=>o.code===t.objectCode));
+}
+function ready(s){ const o = objOf(s); return o && o.status==='有效'; }
+function visLabel(o){
+  const parts = [];
+  if(o.projectVisible) parts.push('项目成员');
+  if(o.deptVisible) parts.push('部门成员');
+  return parts.length ? parts.join('、') : '仅归属人';
+}
 function avail(s){ return round(s.unstocked - s.retained); }
 function round(n){ return Math.round(n * 1000) / 1000; }
 function statusOf(s){
@@ -251,6 +306,10 @@ function statusOf(s){
 }
 function tag(st){
   const cls = st==='可用' ? 'tag-ok' : st==='已销毁' ? 'tag-dead' : 'tag-end';
+  return `<span class="tag ${cls}">${st}</span>`;
+}
+function tagObj(st){
+  const cls = st==='有效' ? 'tag-ok' : 'tag-wait';
   return `<span class="tag ${cls}">${st}</span>`;
 }
 function qty(n, unit){ return `${n} ${unit}`; }
@@ -271,22 +330,37 @@ function pushFlow(s, type, amount, before, after, to){
   s.flows.unshift({time:now(), type, qty:qty(amount, s.unit), before:qty(before, s.unit), after:qty(after, s.unit), to});
 }
 
+function setScene(next){ scene = next; view = 'list'; render(); }
+function setViewer(id){
+  viewerId = id;
+  if(currentId && find(currentId) && !canSee(find(currentId))){ view='list'; currentId=null; }
+  render();
+}
+function viewerBar(){
+  return viewers.map(v=>`<button class="btn ${v.id===viewerId?'btn-primary':''}" onclick="setViewer('${v.id}')">${v.short}</button>`).join('');
+}
 function render(){
-  document.getElementById('view').innerHTML = view==='list' ? listHtml() : detailHtml();
+  document.getElementById('who').textContent = currentViewer().name;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.scene===scene));
+  const html = scene==='out' ? outHtml() : scene==='reg' ? regHtml() : (view==='list' ? listHtml() : detailHtml());
+  document.getElementById('view').innerHTML = html;
 }
 function listHtml(){
   const rows = samples.filter(s=>{
+    if(!canSee(s)) return false;
     const hit = !filters.q || (s.code+s.name).toLowerCase().includes(filters.q.toLowerCase());
     return hit && (!filters.source || s.source===filters.source) && (!filters.status || statusOf(s)===filters.status);
   });
   const body = rows.length ? rows.map(s=>{
     const st = statusOf(s);
-    const canReq = st==='可用' && (avail(s)>0 || s.inventory>0);
+    const o = objOf(s);
+    const canReq = ready(s) && st==='可用' && (avail(s)>0 || s.inventory>0);
+    const objTag = o.status==='有效' ? '' : ' '+tagObj(o.status);
     return `<tr>
       <td><span class="cell-link" onclick="openDetail('${s.code}')">${s.code}</span></td>
-      <td>${s.name}</td>
+      <td>${s.name}${objTag}</td>
       <td>${s.source}</td>
-      <td>${s.owner}</td>
+      <td>${o.owner}</td>
       <td>${qty(s.output, s.unit)}</td>
       <td>${qty(s.unstocked, s.unit)}</td>
       <td>${qty(s.inventory, s.unit)}</td>
@@ -296,9 +370,11 @@ function listHtml(){
         <button class="btn-link" ${canReq?'': 'disabled'} onclick="openDetail('${s.code}');openAction('req')">发起请验</button>
       </td>
     </tr>`;
-  }).join('') : `<tr><td colspan="9" style="text-align:center;color:#909399;padding:28px;">没有符合条件的样品</td></tr>`;
+  }).join('') : `<tr><td colspan="9" style="text-align:center;color:#909399;padding:28px;">没有符合条件的样品。换一个查看人，或到注册对象里看尚未建台账的对象。</td></tr>`;
   return `
-    <div class="demo-note"><b>样品库</b>管真实样品和量，样品池继续管请验。上线前的历史请验不出现在本列表，也不会补挂到台账。点击编号进入详情，可发起请验、入库、留样和销毁。</div>
+    <div class="demo-note"><b>样品库</b>管真实样品和量。能不能看见、能不能请验，沿用注册对象的状态和可见范围。待审批只对归属人和管理授权可见，且不能请验、实验使用、入库。李明只能看到项目 DL34-012 上勾了「项目成员」、且已经生效的样品。上线前的历史请验不出现在本列表。
+      <div style="margin-top:8px;display:flex;gap:8px;align-items:center;">当前查看人 ${viewerBar()}</div>
+    </div>
     <div class="filter-bar"><div class="filter-row">
       <input class="filter-input" id="q" placeholder="样品编号 / 名称" value="${esc(filters.q)}">
       <button class="btn" onclick="filters.q=document.getElementById('q').value;render()">查询</button>
@@ -322,10 +398,13 @@ function detailHtml(){
   const s = find(currentId);
   if(!s){ view='list'; return listHtml(); }
   const st = statusOf(s);
+  const o = objOf(s);
   const a = avail(s);
-  const materialOnly = s.unstocked===0 && s.inventory>0 && st==='可用';
+  const materialOnly = ready(s) && s.unstocked===0 && s.inventory>0 && st==='可用';
+  const pending = !ready(s);
   const canUse = st==='可用';
   const dis = (ok, why)=> ok ? '' : `disabled title="${why}"`;
+  const whyGate = pending ? '对象未生效' : '';
   const panels = {
     flow: table(['时间','类型','数量','未入库量前','未入库量后','去向'], s.flows.map(f=>[f.time,f.type,f.qty,f.before,f.after,f.to])),
     req: table(['请验单号','样品批号','扣量通道','时间'], s.requests.map(r=>[r.no,r.batch,r.channel,r.time])),
@@ -336,7 +415,7 @@ function detailHtml(){
       <button class="btn" onclick="view='list';render()">返回</button>
       <h2>${s.code} ${s.name}</h2>${tag(st)}
     </div>
-    <div class="meta"><span>来源：${s.source} · ${s.ref}</span><span>归属人：${s.owner}</span><span>项目：${s.project}</span><span>单位：${s.unit}</span></div>
+    <div class="meta"><span>来源：${s.source} · ${s.ref}</span><span>归属人：${o.owner}</span><span>项目：${o.project}</span><span>部门：${o.dept}</span><span>可见范围：${visLabel(o)}</span><span>对象状态：${o.status}</span><span>单位：${s.unit}</span></div>
     <div class="cards">
       ${card('产出量', s.output, s.unit)}
       ${card('未入库量', s.unstocked, s.unit)}
@@ -345,10 +424,12 @@ function detailHtml(){
       ${card('入库量', s.inbound, s.unit)}
       ${card('物料库存量', s.inventory, s.unit)}
     </div>
+    ${pending ? `<div class="hint">对象状态为${o.status}。这条台账只对归属人和管理授权可见。请验、实验使用和入库要等审批通过、对象变为有效。留样和销毁仍可在台账上操作。</div>` : ''}
     ${materialOnly ? '<div class="hint">未入库量为 0，台账侧已无可扣量。请验和实验使用只能选择物料容器。入库、留样、销毁不可用。</div>' : ''}
     <div class="actions">
-      <button class="btn btn-primary" ${dis(canUse && (a>0||s.inventory>0), '当前不能请验')} onclick="openAction('req')">发起请验</button>
-      <button class="btn" ${dis(canUse && a>0, '没有可用量')} onclick="openAction('in')">入库</button>
+      <button class="btn btn-primary" ${dis(!whyGate && canUse && (a>0||s.inventory>0), whyGate || '当前不能请验')} onclick="openAction('req')">发起请验</button>
+      <button class="btn" ${dis(!whyGate && canUse && (a>0||s.inventory>0), whyGate || '当前不能实验使用')} onclick="openAction('use')">实验使用</button>
+      <button class="btn" ${dis(!whyGate && canUse && a>0, whyGate || '没有可用量')} onclick="openAction('in')">入库</button>
       <button class="btn" ${dis(canUse && a>0, '没有可用量')} onclick="openAction('keep')">留样</button>
       <button class="btn" ${dis(canUse && s.retained>0, '没有留样量')} onclick="openAction('dropKeep')">销毁留样</button>
       <button class="btn" ${dis(canUse && a>0, '没有可用量')} onclick="openAction('drop')">销毁</button>
@@ -368,7 +449,11 @@ function table(heads, rows){
   }</tbody></table></div>`;
 }
 function esc(s){ return String(s).replace(/"/g,'&quot;'); }
-function openDetail(code){ currentId=code; view='detail'; detailTab='flow'; render(); }
+function openDetail(code){
+  const s = find(code);
+  if(!s || !canSee(s)){ toast('没有该样品的查看权限'); return; }
+  currentId=code; view='detail'; detailTab='flow'; scene='lib'; render();
+}
 
 function openModal(title, body, onOk){
   document.getElementById('modalTitle').textContent = title;
@@ -384,27 +469,45 @@ function closeModal(){
 function fieldNum(id){ const v = parseFloat(document.getElementById(id).value); return isNaN(v) ? null : v; }
 function setErr(msg){ document.getElementById('formErr').textContent = msg || ''; }
 
-function openCreate(){
-  const opts = registryPool.map(o=>`<option value="${o.code}">${o.code} ${o.name}</option>`).join('');
+function blankSample(obj, n, unit, source, ref){
+  return {
+    code:obj.code, name:obj.name, source, ref, owner:obj.owner, project:obj.project, unit,
+    output:n, unstocked:n, retained:0, inbound:0, inventory:0, destroyed:false,
+    containers:[], requests:[],
+    flows:[{time:now(), type:'登记', qty:qty(n, unit), before:'—', after:qty(n, unit), to:ref}]
+  };
+}
+function openCreate(prefill){
+  if(typeof prefill!=='string') prefill = '';
+  if(prefill){
+    const preset = objects.find(o=>o.code===prefill);
+    if(!preset || !canSeeObject(preset)){ toast('没有该对象的查看权限'); return; }
+    if(preset.status!=='有效'){ toast('待审批对象不能生成台账，等审批通过后再操作'); return; }
+    if(find(prefill)){ toast('已有台账 '+prefill); openDetail(prefill); return; }
+  }
+  const selectable = objects.filter(o=>o.status==='有效' && canSeeObject(o));
+  if(!selectable.length){ toast('没有可建台账的有效对象'); return; }
+  const opts = selectable.map(o=>{
+    const has = find(o.code) ? '（已有台账）' : '';
+    return `<option value="${o.code}" ${o.code===prefill?'selected':''}>${o.code} ${o.name}${has}</option>`;
+  }).join('');
   openModal('从注册对象新建', `
     <div class="form-row"><label><i>*</i>注册对象</label><div class="ctrl"><select class="field" id="obj" style="width:100%">${opts}</select>
-      <div class="help">同一注册对象只允许一条台账。已有台账时不能再建。</div></div></div>
+      <div class="help">同一注册对象只允许一条台账。对象须为有效。这一步只写产出量，不写容器。</div></div></div>
     <div class="form-row"><label><i>*</i>产出量</label><div class="ctrl"><input class="field" id="outQty" style="width:160px" placeholder="数量">
       <select class="field" id="outUnit"><option>g</option><option>mg</option><option>支</option><option>瓶</option></select></div></div>
     <div class="err" id="formErr"></div>`, submitCreate);
 }
 function submitCreate(){
   const code = document.getElementById('obj').value;
-  const obj = registryPool.find(o=>o.code===code);
+  const obj = objects.find(o=>o.code===code);
   const n = fieldNum('outQty');
   const unit = document.getElementById('outUnit').value;
-  if(find(code)){ setErr(`已有台账 ${code}，请前往查看`); return; }
+  if(!obj || !canSeeObject(obj)){ setErr('没有该对象的查看权限'); return; }
+  if(obj.status!=='有效'){ setErr('只能为有效的注册对象生成台账'); return; }
+  if(find(code)){ setErr('已有台账 '+code+'，请前往查看'); return; }
   if(n===null || n<=0){ setErr('请填写大于 0 的产出量'); return; }
-  samples.unshift({
-    code, name:obj.name, source:'注册对象', ref:'手工创建', owner:ME, project:'DL34-012', unit,
-    output:n, unstocked:n, retained:0, inbound:0, inventory:0, destroyed:false,
-    containers:[], requests:[], flows:[{time:now(), type:'登记', qty:qty(n,unit), before:'—', after:qty(n,unit), to:'手工创建'}]
-  });
+  samples.unshift(blankSample(obj, n, unit, '注册对象', '手工创建'));
   closeModal();
   toast('已生成样品台账 '+code, true);
   openDetail(code);
@@ -412,8 +515,13 @@ function submitCreate(){
 
 function openAction(kind){
   const s = find(currentId);
+  if(!s || !canSee(s)) return;
   const a = avail(s);
-  if(kind==='req') return openReq(s, a);
+  if((kind==='req' || kind==='use' || kind==='in') && !ready(s)){
+    toast('对象待审批，不能请验、实验使用或入库');
+    return;
+  }
+  if(kind==='req' || kind==='use') return openReq(s, a, kind);
   const map = {
     in: ['入库', `本次入库量不能超过可用量 ${qty(a,s.unit)}。入库后写容器，未入库量减少，物料库存量增加。`, 'inQty', a, submitIn],
     keep: ['留样', `留样量从可用量里冻住，未入库量不变。当前可用量 ${qty(a,s.unit)}。`, 'keepQty', a, submitKeep],
@@ -485,9 +593,11 @@ function submitDrop(){
   closeModal(); toast(s.destroyed ? '未入库量已销毁，状态为已销毁' : '已销毁 '+qty(n,s.unit), true); render();
 }
 
-function openReq(s, a){
+function openReq(s, a, kind){
   const boxes = s.containers.filter(c=>c.qty>0);
   const ledgerOff = a<=0;
+  const use = kind==='use';
+  const title = use ? '实验使用' : '发起请验';
   const boxRows = boxes.length ? boxes.map((c,i)=>`
     <tr>
       <td><input type="checkbox" class="useBox" data-i="${i}" ${c.whole?'checked':''} onchange="syncWhole(this)"></td>
@@ -495,7 +605,7 @@ function openReq(s, a){
       <td>${c.whole?'整体出库':'按量'}</td>
       <td><input class="field boxQty" data-i="${i}" style="width:90px" ${c.whole?`value="${c.qty}" disabled`:''}></td>
     </tr>`).join('') : '<tr><td colspan="6" style="color:#909399;">没有剩余量大于 0 的容器</td></tr>';
-  openModal('发起请验', `
+  openModal(title, `
     <div class="form-row"><label>样品</label><div class="ctrl" style="line-height:32px;">${s.code} ${s.name}</div></div>
     <div class="form-row"><label>未入库</label><div class="ctrl">
       <input class="field" id="ledgerQty" style="width:160px" placeholder="使用量" ${ledgerOff?'disabled':''}> <span>${s.unit}</span>
@@ -505,13 +615,14 @@ function openReq(s, a){
       <div class="table-wrap" style="margin:0;"><table class="el-table"><thead><tr><th></th><th>容器</th><th>仓库</th><th>剩余</th><th>方式</th><th>使用量</th></tr></thead><tbody>${boxRows}</tbody></table></div>
       <div class="help">两个通道至少填一项。容器用量不改变未入库量和入库量。</div>
     </div></div>
-    <div class="err" id="formErr"></div>`, ()=>submitReq(s, a, boxes));
+    <div class="err" id="formErr"></div>`, ()=>submitReq(s, a, boxes, kind));
 }
 function syncWhole(cb){
   const input = document.querySelector(`.boxQty[data-i="${cb.dataset.i}"]`);
   if(input && input.disabled) return;
 }
-function submitReq(s, a, boxes){
+function submitReq(s, a, boxes, kind){
+  const use = kind==='use';
   let ledger = 0;
   if(a>0){
     const raw = document.getElementById('ledgerQty').value.trim();
@@ -538,15 +649,22 @@ function submitReq(s, a, boxes){
   if(ledger){
     const before = s.unstocked;
     s.unstocked = round(s.unstocked - ledger);
-    pushFlow(s, '请验消耗', ledger, before, s.unstocked, '请验单');
+    pushFlow(s, use?'实验使用':'请验消耗', ledger, before, s.unstocked, use?'实验记录':'请验单');
     channels.push('台账 '+qty(ledger, s.unit));
   }
   picked.forEach(p=>{
     p.c.qty = round(p.c.qty - p.n);
     s.inventory = round(s.inventory - p.n);
     channels.push('物料·'+p.c.code+' '+qty(p.n, s.unit));
-    s.flows.unshift({time:now(), type:'请验消耗', qty:qty(p.n,s.unit), before:qty(s.unstocked,s.unit), after:qty(s.unstocked,s.unit), to:p.c.code});
+    s.flows.unshift({time:now(), type:use?'实验使用':'请验消耗', qty:qty(p.n,s.unit), before:qty(s.unstocked,s.unit), after:qty(s.unstocked,s.unit), to:p.c.code});
   });
+  if(use){
+    closeModal();
+    toast('已按实验使用扣量', true);
+    detailTab = 'flow';
+    render();
+    return;
+  }
   seq += 1;
   const no = 'QY-20260922-'+String(seq).padStart(3,'0');
   s.requests.unshift({no, batch:'YPPH-20260922-'+String(seq).padStart(3,'0'), channel:channels.join(' + '), time:now()});
@@ -555,6 +673,103 @@ function submitReq(s, a, boxes){
   toast('已生成请验单 '+no+'，进入样品池', true);
   detailTab = 'req';
   render();
+}
+
+function outHtml(){
+  const rows = tasks.filter(canSeeTask);
+  const body = rows.length ? rows.map(t=>{
+    const linked = t.objectCode ? `<span class="cell-link" onclick="openDetail('${t.objectCode}')">${t.objectCode}</span>` : '—';
+    const op = t.status==='待交货'
+      ? `<button class="btn-link" onclick="openOutput('${t.no}')">产出登记</button>`
+      : (t.objectCode ? `<button class="btn-link" onclick="openDetail('${t.objectCode}')">查看台账</button>` : '');
+    const stTag = t.status==='已交货' ? '<span class="tag tag-ok">已交货</span>' : '<span class="tag tag-wait">待交货</span>';
+    return `<tr>
+      <td>${t.no}</td><td>${t.exp}</td><td>${t.model}</td><td>${t.workflow?'开启':'未开启'}</td>
+      <td>${t.owner}</td><td>${t.project}</td><td>${stTag}</td>
+      <td>${linked}</td><td>${op}</td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="9" style="text-align:center;color:#909399;padding:28px;">没有你能看到的合成任务</td></tr>`;
+  return `
+    <div class="demo-note"><b>产出登记</b>在正式产品里挂在合成任务的交货。保存时注册对象并写入产出量，生成样品台账。不填写容器和仓库；要进物料库，回到样品库详情做入库。对象模型开启工作流时，对象先进入待审批。
+      <div style="margin-top:8px;display:flex;gap:8px;align-items:center;">当前查看人 ${viewerBar()}</div>
+    </div>
+    <div class="table-wrap" style="margin-top:12px;"><table class="el-table"><thead><tr>
+      <th>合成任务</th><th>实验记录</th><th>对象模型</th><th>工作流</th><th>执行人</th><th>项目</th><th>交货状态</th><th>注册对象</th><th>操作</th>
+    </tr></thead><tbody>${body}</tbody></table></div>
+    <div class="pagination">共 ${rows.length} 条</div>`;
+}
+function regHtml(){
+  const rows = objects.filter(canSeeObject);
+  const body = rows.map(o=>{
+    const ledger = find(o.code);
+    let op = '';
+    if(ledger) op = `<button class="btn-link" onclick="openDetail('${o.code}')">查看台账</button>`;
+    else if(o.status==='有效') op = `<button class="btn-link" onclick="openCreate('${o.code}')">生成台账</button>`;
+    else op = `<button class="btn-link" disabled title="待审批对象不能被引用">生成台账</button>`;
+    return `<tr>
+      <td>${o.code}</td><td>${o.name}</td><td>${o.model}</td><td>${tagObj(o.status)}</td>
+      <td>${visLabel(o)}</td><td>${o.owner}</td><td>${o.project}</td>
+      <td>${ledger ? tag(statusOf(ledger)) : '—'}</td><td>${op}</td>
+    </tr>`;
+  }).join('');
+  return `
+    <div class="demo-note"><b>注册对象</b>是样品身份。一个对象最多一条样品台账。从这里为已有的有效对象补建台账时，同样只填产出量。待审批对象不对他人显示，也不能在这里生成台账。
+      <div style="margin-top:8px;display:flex;gap:8px;align-items:center;">当前查看人 ${viewerBar()}</div>
+    </div>
+    <div class="table-wrap" style="margin-top:12px;"><table class="el-table"><thead><tr>
+      <th>对象编号</th><th>名称</th><th>对象模型</th><th>对象状态</th><th>可见范围</th><th>归属人</th><th>项目</th><th>样品台账</th><th>操作</th>
+    </tr></thead><tbody>${body}</tbody></table></div>
+    <div class="pagination">共 ${rows.length} 条</div>`;
+}
+function openOutput(no){
+  const t = tasks.find(x=>x.no===no);
+  if(!t || !canSeeTask(t)){ toast('没有该任务的操作权限'); return; }
+  if(t.status!=='待交货'){ toast('该任务已交货'); return; }
+  const flowNote = t.workflow
+    ? '本模型已开启工作流。保存后对象为待审批：台账会生成，但不能请验、不能实验使用、不能入库，他人也看不到。'
+    : '本模型未开启工作流。保存后对象直接有效，可以请验和使用。';
+  openModal('产出登记', `
+    <div class="form-row"><label>合成任务</label><div class="ctrl" style="line-height:32px;">${t.no} · ${t.exp}</div></div>
+    <div class="form-row"><label>对象模型</label><div class="ctrl" style="line-height:32px;">${t.model}</div></div>
+    <div class="form-row"><label><i>*</i>名称</label><div class="ctrl"><input class="field" id="objName" style="width:100%" placeholder="产出物名称"></div></div>
+    <div class="form-row"><label>项目</label><div class="ctrl" style="line-height:32px;">${t.project}</div></div>
+    <div class="form-row"><label>部门</label><div class="ctrl" style="line-height:32px;">${t.dept}</div></div>
+    <div class="form-row"><label>可见范围</label><div class="ctrl" style="line-height:32px;">
+      <label style="width:auto;"><input type="checkbox" id="visProj"> 项目成员</label>
+      <label style="width:auto;margin-left:16px;"><input type="checkbox" id="visDept"> 部门成员</label>
+      <div class="help">默认不勾选。不勾选时只有归属人和管理授权能看到这条样品。</div>
+    </div></div>
+    <div class="form-row"><label><i>*</i>产出量</label><div class="ctrl"><input class="field" id="outQty" style="width:160px" placeholder="数量">
+      <select class="field" id="outUnit"><option>g</option><option>mg</option><option>支</option><option>瓶</option></select>
+      <div class="help">${flowNote}不在这里填写容器和仓库，入库时再到样品库写容器。</div>
+    </div></div>
+    <input type="hidden" id="taskNo" value="${t.no}">
+    <div class="err" id="formErr"></div>`, submitOutput);
+}
+function submitOutput(){
+  const task = tasks.find(t=>t.no===document.getElementById('taskNo').value);
+  const name = document.getElementById('objName').value.trim();
+  const n = fieldNum('outQty');
+  const unit = document.getElementById('outUnit').value;
+  if(!task || task.status!=='待交货'){ setErr('该任务已交货'); return; }
+  if(!name){ setErr('请填写名称'); return; }
+  if(n===null || n<=0){ setErr('请填写大于 0 的产出量'); return; }
+  objSeq += 1;
+  const prefix = task.model==='参考序列' ? 'RS' : 'CMP';
+  const code = prefix+'-20260922-'+String(objSeq).padStart(3,'0');
+  const status = task.workflow ? '待审批' : '有效';
+  const obj = {
+    code, name, model:task.model, status, owner:task.owner, project:task.project, dept:task.dept,
+    projectVisible: document.getElementById('visProj').checked,
+    deptVisible: document.getElementById('visDept').checked
+  };
+  objects.unshift(obj);
+  samples.unshift(blankSample(obj, n, unit, '实验产出', task.exp));
+  task.status = '已交货';
+  task.objectCode = code;
+  closeModal();
+  toast(status==='待审批' ? '已注册对象并生成台账。对象待审批，暂不能扣量' : '已注册对象并生成台账', true);
+  openDetail(code);
 }
 render();
 </script>
