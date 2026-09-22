@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ELN 样品库 - 原型</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css">
+<style>
+:root{
+  --primary:#006de5;--primary-light:#f2f9ff;--primary-hover:#0059bd;
+  --text:#333;--text-regular:#515a6e;--text-secondary:#909399;--text-placeholder:#c0c4cc;
+  --border:#dadada;--border-light:#e5e5e5;--bg-page:#f0f2f5;--white:#fff;
+  --header-h:60px;--tab-h:40px;--sidebar-w:90px;--submenu-w:160px;
+  --danger:#ed4014;--success:#67c23a;--warning:#e6a23c;--radius:4px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+[class^="ri-"],[class*=" ri-"]{display:inline-flex;align-items:center;justify-content:center;line-height:1;font-style:normal;vertical-align:middle;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;font-size:14px;color:var(--text);background:var(--bg-page);overflow:hidden;}
+.topbar{height:var(--header-h);background:linear-gradient(90deg,#1e4fd8 0%,#2b6cff 45%,#3b7dff 100%);display:flex;align-items:center;padding:0 20px;}
+.topbar-logo{display:flex;align-items:center;gap:8px;}
+.logo-mark{width:30px;height:30px;border-radius:5px;background:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--primary);font-size:17px;font-style:italic;}
+.logo-text{color:#fff;font-weight:600;font-size:15px;}
+.logo-sub{color:rgba(255,255,255,.85);font-size:14px;margin-left:4px;}
+.topbar-search{width:380px;height:34px;margin-left:70px;position:relative;}
+.topbar-search input{width:100%;height:100%;border:none;border-radius:17px;background:rgba(255,255,255,.22);padding:0 38px 0 16px;color:#fff;font-size:13px;outline:none;}
+.topbar-search input::placeholder{color:rgba(255,255,255,.75);}
+.topbar-search .search-icon{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,.85);font-size:16px;}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:22px;color:#fff;font-size:14px;}
+.topbar-item{position:relative;cursor:pointer;}
+.topbar-badge{position:absolute;top:-8px;right:-10px;background:#f5222d;color:#fff;font-size:11px;line-height:15px;padding:0 5px;border-radius:8px;}
+.topbar-icon{font-size:18px;position:relative;}
+.topbar-user{display:flex;align-items:center;gap:7px;}
+.avatar{width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;}
+.layout{display:flex;height:calc(100vh - var(--header-h));}
+.sidebar{width:var(--sidebar-w);background:#fff;border-right:1px solid var(--border-light);display:flex;flex-direction:column;align-items:center;padding-top:10px;flex-shrink:0;}
+.side-plus{width:36px;height:36px;border-radius:50%;background:#2f8bff;color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:16px;}
+.nav-item{width:72px;padding:9px 0;display:flex;flex-direction:column;align-items:center;gap:4px;border-radius:6px;color:var(--text-regular);margin-bottom:2px;}
+.nav-item.active{background:var(--primary-light);color:var(--primary);}
+.nav-item .nav-icon{font-size:20px;}
+.nav-item .nav-label{font-size:12px;}
+.submenu{width:var(--submenu-w);background:#fff;border-right:1px solid var(--border-light);padding:14px 0;flex-shrink:0;}
+.submenu-title{font-size:14px;font-weight:600;padding:0 18px 12px;}
+.submenu-item{padding:10px 18px;font-size:13px;color:var(--text-regular);border-left:3px solid transparent;}
+.submenu-item.active{color:var(--primary);background:var(--primary-light);border-left-color:var(--primary);font-weight:500;}
+.main{flex:1;display:flex;flex-direction:column;min-width:0;}
+.tabs{height:var(--tab-h);background:#fff;display:flex;align-items:center;border-bottom:1px solid var(--border-light);padding:0 8px;gap:2px;}
+.tab{display:flex;align-items:center;gap:8px;padding:0 14px;height:32px;font-size:13px;color:var(--text-regular);background:#f5f7fa;border-radius:4px;}
+.tab.active{background:var(--primary-light);color:var(--primary);font-weight:500;}
+.content{flex:1;overflow:auto;background:#fff;margin:8px;border-radius:4px;}
+.demo-note{margin:12px 16px 0;padding:8px 12px;background:#f2f9ff;border:1px solid #d6e8ff;border-radius:4px;font-size:12px;color:var(--text-regular);line-height:1.6;}
+.filter-bar{padding:14px 16px 10px;}
+.filter-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;}
+.filter-input,.filter-select,input.field,select.field{
+  height:32px;border:1px solid var(--border);border-radius:var(--radius);padding:0 12px;font-size:13px;color:var(--text);background:#fff;outline:none;
+}
+.filter-input{width:260px;}
+.filter-select{min-width:130px;}
+.filter-input:focus,input.field:focus,select.field:focus{border-color:var(--primary);}
+.filter-actions{margin-left:auto;display:flex;gap:10px;}
+.btn{height:32px;padding:0 16px;border-radius:var(--radius);border:1px solid var(--border);background:#fff;font-size:13px;color:var(--text-regular);cursor:pointer;display:inline-flex;align-items:center;gap:5px;}
+.btn:hover{border-color:var(--primary);color:var(--primary);}
+.btn-primary{background:var(--primary);border-color:var(--primary);color:#fff;}
+.btn-primary:hover{background:var(--primary-hover);color:#fff;}
+.btn[disabled],.btn-primary[disabled]{background:#f5f7fa;border-color:var(--border);color:#c0c4cc;cursor:not-allowed;}
+.btn-link{border:none;background:none;color:var(--primary);padding:0 4px;font-size:13px;cursor:pointer;}
+.btn-link.danger{color:var(--danger);}
+.btn-link[disabled]{color:#c0c4cc;cursor:not-allowed;}
+.table-wrap{border:1px solid var(--border-light);border-radius:var(--radius);overflow:auto;margin:0 16px 12px;}
+table.el-table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px;white-space:nowrap;}
+table.el-table th{background:#f5f7fa;font-weight:600;text-align:left;padding:9px 12px;border-bottom:1px solid var(--border-light);}
+table.el-table td{padding:9px 12px;border-bottom:1px solid var(--border-light);color:var(--text-regular);}
+table.el-table tbody tr:hover{background:#fafcff;}
+.cell-link{color:var(--primary);cursor:pointer;}
+.cell-link:hover{text-decoration:underline;}
+.tag{display:inline-block;padding:1px 7px;border-radius:3px;font-size:12px;line-height:18px;border:1px solid;}
+.tag-ok{color:#67c23a;border-color:#c2e7b0;background:#f0f9eb;}
+.tag-end{color:#909399;border-color:#e4e7ed;background:#f4f4f5;}
+.tag-dead{color:#ed4014;border-color:#fbc4c4;background:#fef0f0;}
+.pagination{display:flex;justify-content:flex-end;gap:10px;padding:4px 16px 16px;font-size:13px;color:var(--text-regular);}
+.detail-head{display:flex;align-items:center;gap:12px;padding:14px 16px 0;}
+.detail-head h2{font-size:16px;font-weight:600;}
+.meta{padding:8px 16px 0;color:var(--text-secondary);font-size:13px;display:flex;gap:18px;flex-wrap:wrap;}
+.cards{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;padding:14px 16px;}
+.card{border:1px solid var(--border-light);border-radius:4px;padding:10px 12px;background:#fafbfc;}
+.card .k{font-size:12px;color:var(--text-secondary);}
+.card .v{margin-top:4px;font-size:18px;font-weight:600;color:var(--text);}
+.card .v em{font-style:normal;font-size:12px;font-weight:400;color:var(--text-secondary);margin-left:4px;}
+.actions{padding:0 16px 12px;display:flex;gap:8px;flex-wrap:wrap;}
+.hint{margin:0 16px 12px;padding:8px 12px;background:#fdf6ec;border:1px solid #f5dab1;border-radius:4px;font-size:12px;color:#b88230;}
+.subtabs{display:flex;gap:20px;padding:0 16px;border-bottom:1px solid var(--border-light);}
+.subtabs span{padding:8px 0;cursor:pointer;color:var(--text-regular);font-size:13px;}
+.subtabs span.on{color:var(--primary);font-weight:500;border-bottom:2px solid var(--primary);}
+.mask{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;display:none;}
+.mask.show{display:block;}
+.modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border-radius:4px;z-index:301;display:none;flex-direction:column;width:640px;max-height:86vh;box-shadow:0 6px 30px rgba(0,0,0,.2);}
+.modal.show{display:flex;}
+.modal-header{height:50px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;border-bottom:1px solid var(--border-light);}
+.mh-title{font-size:15px;font-weight:600;display:flex;align-items:center;gap:8px;}
+.mh-title::before{content:"";width:3px;height:14px;background:var(--primary);border-radius:2px;}
+.mh-close{font-size:17px;color:var(--text-secondary);cursor:pointer;}
+.modal-body{padding:16px 20px;overflow:auto;}
+.modal-footer{height:56px;border-top:1px solid var(--border-light);display:flex;align-items:center;justify-content:flex-end;gap:12px;padding:0 20px;}
+.form-row{display:flex;align-items:flex-start;margin-bottom:14px;gap:12px;}
+.form-row label{width:110px;flex-shrink:0;line-height:32px;color:var(--text-regular);text-align:right;}
+.form-row label i{color:var(--danger);margin-right:2px;font-style:normal;}
+.form-row .ctrl{flex:1;}
+.help{font-size:12px;color:var(--text-secondary);margin-top:4px;}
+.err{color:var(--danger);font-size:12px;margin-top:4px;min-height:16px;}
+.toast{position:fixed;top:76px;left:50%;transform:translateX(-50%);background:#fff;border:1px solid #f5dab1;color:#b88230;padding:8px 16px;border-radius:4px;z-index:400;display:none;box-shadow:0 2px 8px rgba(0,0,0,.08);font-size:13px;}
+.toast.show{display:block;}
+.toast.ok{border-color:#c2e7b0;color:#67c23a;}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-logo"><div class="logo-mark">M</div><span class="logo-text">明度智云</span><span class="logo-sub">电子实验记录本</span></div>
+  <div class="topbar-search"><input placeholder="请输入搜索内容"><span class="search-icon ri-search-line"></span></div>
+  <div class="topbar-right">
+    <div class="topbar-item">审批<span class="topbar-badge">5</span></div>
+    <div class="topbar-item">发起审批</div>
+    <span class="topbar-icon ri-apps-2-line"></span>
+    <span class="topbar-icon ri-mail-line"><span class="topbar-badge">587</span></span>
+    <div class="topbar-user"><span class="avatar ri-user-line"></span><span>邓小伟</span><span class="ri-arrow-down-s-line"></span></div>
+  </div>
+</header>
+<div class="layout">
+  <nav class="sidebar">
+    <div class="side-plus ri-add-line"></div>
+    <div class="nav-item"><span class="nav-icon ri-computer-line"></span><span class="nav-label">工作台</span></div>
+    <div class="nav-item"><span class="nav-icon ri-folders-line"></span><span class="nav-label">项目</span></div>
+    <div class="nav-item"><span class="nav-icon ri-book-2-line"></span><span class="nav-label">记录本</span></div>
+    <div class="nav-item"><span class="nav-icon ri-archive-drawer-line"></span><span class="nav-label">归档</span></div>
+    <div class="nav-item"><span class="nav-icon ri-clipboard-line"></span><span class="nav-label">需求</span></div>
+    <div class="nav-item"><span class="nav-icon ri-bar-chart-box-line"></span><span class="nav-label">报告</span></div>
+    <div class="nav-item"><span class="nav-icon ri-file-text-line"></span><span class="nav-label">文档</span></div>
+    <div class="nav-item"><span class="nav-icon ri-ruler-2-line"></span><span class="nav-label">模板</span></div>
+    <div class="nav-item active"><span class="nav-icon ri-flask-line"></span><span class="nav-label">样品</span></div>
+    <div class="nav-item"><span class="nav-icon ri-line-chart-line"></span><span class="nav-label">统计审阅</span></div>
+    <div class="nav-item"><span class="nav-icon ri-settings-3-line"></span><span class="nav-label">设置</span></div>
+  </nav>
+  <aside class="submenu">
+    <div class="submenu-title">样品</div>
+    <div class="submenu-item">我的请验</div>
+    <div class="submenu-item">我的分析</div>
+    <div class="submenu-item">样品池</div>
+    <div class="submenu-item active">样品库</div>
+  </aside>
+  <div class="main">
+    <div class="tabs"><div class="tab active"><span class="ri-flask-line"></span> 样品库</div></div>
+    <div class="content" id="view"></div>
+  </div>
+</div>
+<div class="mask" id="mask" onclick="closeModal()"></div>
+<div class="modal" id="modal">
+  <div class="modal-header"><div class="mh-title" id="modalTitle"></div><span class="mh-close ri-close-line" onclick="closeModal()"></span></div>
+  <div class="modal-body" id="modalBody"></div>
+  <div class="modal-footer">
+    <button class="btn" onclick="closeModal()">取消</button>
+    <button class="btn btn-primary" id="modalOk">确定</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+const ME = '邓小伟';
+let seq = 20;
+let currentId = null;
+let view = 'list';
+let detailTab = 'flow';
+const filters = { q:'', source:'', status:'' };
+
+let samples = [
+  {
+    code:'AB-2026-0018', name:'抗体中间体 A', source:'实验产出', ref:'EXP-20260918-014',
+    owner:'邓小伟', project:'DL34-012', unit:'g', output:10, unstocked:5, retained:2, inbound:4, inventory:3.5,
+    destroyed:false,
+    containers:[
+      {code:'C-018-01', warehouse:'产物库 A', qty:2, whole:false},
+      {code:'C-018-02', warehouse:'冷库', qty:1.5, whole:true}
+    ],
+    requests:[{no:'QY-20260920-006', batch:'YPPH-20260920-006', channel:'台账 1 g', time:'2026-09-20 11:02'}],
+    flows:[
+      {time:'2026-09-18 16:20', type:'登记', qty:'10 g', before:'—', after:'10 g', to:'EXP-20260918-014'},
+      {time:'2026-09-19 09:12', type:'入库', qty:'4 g', before:'10 g', after:'6 g', to:'C-018-01 / C-018-02'},
+      {time:'2026-09-19 15:40', type:'留样', qty:'2 g', before:'6 g', after:'6 g', to:'—'},
+      {time:'2026-09-20 11:02', type:'请验消耗', qty:'1 g', before:'6 g', after:'5 g', to:'QY-20260920-006'}
+    ]
+  },
+  {
+    code:'PL-2026-0042', name:'质粒 pUC-X', source:'实验产出', ref:'EXP-20260921-003',
+    owner:'林加旗', project:'DL34-012', unit:'支', output:20, unstocked:20, retained:0, inbound:0, inventory:0,
+    destroyed:false, containers:[], requests:[],
+    flows:[{time:'2026-09-21 10:08', type:'登记', qty:'20 支', before:'—', after:'20 支', to:'EXP-20260921-003'}]
+  },
+  {
+    code:'CE-2026-0007', name:'细胞株 HEK', source:'实验产出', ref:'EXP-20260915-008',
+    owner:'王敏', project:'DL34-019', unit:'支', output:8, unstocked:0, retained:0, inbound:8, inventory:5,
+    destroyed:false,
+    containers:[{code:'C-007-01', warehouse:'细胞库', qty:5, whole:false}],
+    requests:[],
+    flows:[
+      {time:'2026-09-15 14:00', type:'登记', qty:'8 支', before:'—', after:'8 支', to:'EXP-20260915-008'},
+      {time:'2026-09-16 09:30', type:'入库', qty:'8 支', before:'8 支', after:'0 支', to:'C-007-01'}
+    ]
+  },
+  {
+    code:'AB-2026-0003', name:'抗体成品 B', source:'注册对象', ref:'手工创建',
+    owner:'邓小伟', project:'DL34-012', unit:'g', output:5, unstocked:0, retained:0, inbound:0, inventory:0,
+    destroyed:false, containers:[], requests:[
+      {no:'QY-20260912-002', batch:'YPPH-20260912-002', channel:'台账 5 g', time:'2026-09-12 16:18'}
+    ],
+    flows:[
+      {time:'2026-09-10 09:00', type:'登记', qty:'5 g', before:'—', after:'5 g', to:'手工创建'},
+      {time:'2026-09-12 16:18', type:'请验消耗', qty:'5 g', before:'5 g', after:'0 g', to:'QY-20260912-002'}
+    ]
+  },
+  {
+    code:'RG-2026-0011', name:'参比品', source:'注册对象', ref:'手工创建',
+    owner:'陈立', project:'DL34-008', unit:'g', output:12, unstocked:0, retained:0, inbound:4, inventory:4,
+    destroyed:true,
+    containers:[{code:'C-011-01', warehouse:'室温柜 C', qty:4, whole:false}],
+    requests:[],
+    flows:[
+      {time:'2026-09-08 11:00', type:'登记', qty:'12 g', before:'—', after:'12 g', to:'手工创建'},
+      {time:'2026-09-09 10:00', type:'入库', qty:'4 g', before:'12 g', after:'8 g', to:'C-011-01'},
+      {time:'2026-09-11 17:22', type:'销毁', qty:'8 g', before:'8 g', after:'0 g', to:'—'}
+    ]
+  },
+  {
+    code:'SP-2026-0020', name:'留样对照', source:'实验产出', ref:'EXP-20260917-002',
+    owner:'邓小伟', project:'DL34-012', unit:'g', output:2, unstocked:2, retained:2, inbound:0, inventory:0,
+    destroyed:false, containers:[], requests:[],
+    flows:[
+      {time:'2026-09-17 13:10', type:'登记', qty:'2 g', before:'—', after:'2 g', to:'EXP-20260917-002'},
+      {time:'2026-09-17 13:12', type:'留样', qty:'2 g', before:'2 g', after:'2 g', to:'—'}
+    ]
+  }
+];
+
+const registryPool = [
+  {code:'AB-2026-0018', name:'抗体中间体 A'},
+  {code:'NW-2026-0090', name:'新注册化合物 N'},
+  {code:'CE-2026-0007', name:'细胞株 HEK'}
+];
+
+function avail(s){ return round(s.unstocked - s.retained); }
+function round(n){ return Math.round(n * 1000) / 1000; }
+function statusOf(s){
+  if (s.destroyed && s.unstocked === 0) return '已销毁';
+  if (s.unstocked === 0 && s.inventory === 0) return '已耗尽';
+  return '可用';
+}
+function tag(st){
+  const cls = st==='可用' ? 'tag-ok' : st==='已销毁' ? 'tag-dead' : 'tag-end';
+  return `<span class="tag ${cls}">${st}</span>`;
+}
+function qty(n, unit){ return `${n} ${unit}`; }
+function find(code){ return samples.find(s=>s.code===code); }
+function now(){
+  const d = new Date();
+  const p = n => String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+function toast(msg, ok){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show' + (ok ? ' ok' : '');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(()=>el.classList.remove('show'), 2200);
+}
+function pushFlow(s, type, amount, before, after, to){
+  s.flows.unshift({time:now(), type, qty:qty(amount, s.unit), before:qty(before, s.unit), after:qty(after, s.unit), to});
+}
+
+function render(){
+  document.getElementById('view').innerHTML = view==='list' ? listHtml() : detailHtml();
+}
+function listHtml(){
+  const rows = samples.filter(s=>{
+    const hit = !filters.q || (s.code+s.name).toLowerCase().includes(filters.q.toLowerCase());
+    return hit && (!filters.source || s.source===filters.source) && (!filters.status || statusOf(s)===filters.status);
+  });
+  const body = rows.length ? rows.map(s=>{
+    const st = statusOf(s);
+    const canReq = st==='可用' && (avail(s)>0 || s.inventory>0);
+    return `<tr>
+      <td><span class="cell-link" onclick="openDetail('${s.code}')">${s.code}</span></td>
+      <td>${s.name}</td>
+      <td>${s.source}</td>
+      <td>${s.owner}</td>
+      <td>${qty(s.output, s.unit)}</td>
+      <td>${qty(s.unstocked, s.unit)}</td>
+      <td>${qty(s.inventory, s.unit)}</td>
+      <td>${tag(st)}</td>
+      <td>
+        <button class="btn-link" onclick="openDetail('${s.code}')">详情</button>
+        <button class="btn-link" ${canReq?'': 'disabled'} onclick="openDetail('${s.code}');openAction('req')">发起请验</button>
+      </td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="9" style="text-align:center;color:#909399;padding:28px;">没有符合条件的样品</td></tr>`;
+  return `
+    <div class="demo-note"><b>样品库</b>管真实样品和量，样品池继续管请验。上线前的历史请验不出现在本列表，也不会补挂到台账。点击编号进入详情，可发起请验、入库、留样和销毁。</div>
+    <div class="filter-bar"><div class="filter-row">
+      <input class="filter-input" id="q" placeholder="样品编号 / 名称" value="${esc(filters.q)}">
+      <button class="btn" onclick="filters.q=document.getElementById('q').value;render()">查询</button>
+      <select class="filter-select" onchange="filters.source=this.value;render()">
+        <option value="">全部来源</option>
+        <option ${filters.source==='实验产出'?'selected':''}>实验产出</option>
+        <option ${filters.source==='注册对象'?'selected':''}>注册对象</option>
+      </select>
+      <select class="filter-select" onchange="filters.status=this.value;render()">
+        <option value="">全部状态</option>
+        ${['可用','已耗尽','已销毁'].map(x=>`<option ${filters.status===x?'selected':''}>${x}</option>`).join('')}
+      </select>
+      <div class="filter-actions"><button class="btn btn-primary" onclick="openCreate()">从注册对象新建</button></div>
+    </div></div>
+    <div class="table-wrap"><table class="el-table"><thead><tr>
+      <th>样品编号</th><th>样品名称</th><th>来源</th><th>归属人</th><th>产出量</th><th>未入库量</th><th>物料库存量</th><th>状态</th><th>操作</th>
+    </tr></thead><tbody>${body}</tbody></table></div>
+    <div class="pagination">共 ${rows.length} 条</div>`;
+}
+function detailHtml(){
+  const s = find(currentId);
+  if(!s){ view='list'; return listHtml(); }
+  const st = statusOf(s);
+  const a = avail(s);
+  const materialOnly = s.unstocked===0 && s.inventory>0 && st==='可用';
+  const canUse = st==='可用';
+  const dis = (ok, why)=> ok ? '' : `disabled title="${why}"`;
+  const panels = {
+    flow: table(['时间','类型','数量','未入库量前','未入库量后','去向'], s.flows.map(f=>[f.time,f.type,f.qty,f.before,f.after,f.to])),
+    req: table(['请验单号','样品批号','扣量通道','时间'], s.requests.map(r=>[r.no,r.batch,r.channel,r.time])),
+    box: table(['容器编号','仓库','剩余量','出库方式'], s.containers.map(c=>[c.code,c.warehouse,qty(c.qty,s.unit), c.whole?'整体出库':'按量']))
+  };
+  return `
+    <div class="detail-head">
+      <button class="btn" onclick="view='list';render()">返回</button>
+      <h2>${s.code} ${s.name}</h2>${tag(st)}
+    </div>
+    <div class="meta"><span>来源：${s.source} · ${s.ref}</span><span>归属人：${s.owner}</span><span>项目：${s.project}</span><span>单位：${s.unit}</span></div>
+    <div class="cards">
+      ${card('产出量', s.output, s.unit)}
+      ${card('未入库量', s.unstocked, s.unit)}
+      ${card('留样量', s.retained, s.unit)}
+      ${card('可用量', a, s.unit)}
+      ${card('入库量', s.inbound, s.unit)}
+      ${card('物料库存量', s.inventory, s.unit)}
+    </div>
+    ${materialOnly ? '<div class="hint">未入库量为 0，台账侧已无可扣量。请验和实验使用只能选择物料容器。入库、留样、销毁不可用。</div>' : ''}
+    <div class="actions">
+      <button class="btn btn-primary" ${dis(canUse && (a>0||s.inventory>0), '当前不能请验')} onclick="openAction('req')">发起请验</button>
+      <button class="btn" ${dis(canUse && a>0, '没有可用量')} onclick="openAction('in')">入库</button>
+      <button class="btn" ${dis(canUse && a>0, '没有可用量')} onclick="openAction('keep')">留样</button>
+      <button class="btn" ${dis(canUse && s.retained>0, '没有留样量')} onclick="openAction('dropKeep')">销毁留样</button>
+      <button class="btn" ${dis(canUse && a>0, '没有可用量')} onclick="openAction('drop')">销毁</button>
+    </div>
+    <div class="subtabs">
+      <span class="${detailTab==='flow'?'on':''}" onclick="detailTab='flow';render()">流水</span>
+      <span class="${detailTab==='req'?'on':''}" onclick="detailTab='req';render()">关联请验</span>
+      <span class="${detailTab==='box'?'on':''}" onclick="detailTab='box';render()">关联容器</span>
+    </div>
+    <div style="padding-top:12px;">${panels[detailTab] || '<div style="padding:24px;color:#909399;">暂无数据</div>'}</div>`;
+}
+function card(k,v,u){ return `<div class="card"><div class="k">${k}</div><div class="v">${v}<em>${u}</em></div></div>`; }
+function table(heads, rows){
+  if(!rows.length) return '<div style="padding:24px;color:#909399;">暂无数据</div>';
+  return `<div class="table-wrap"><table class="el-table"><thead><tr>${heads.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${
+    rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')
+  }</tbody></table></div>`;
+}
+function esc(s){ return String(s).replace(/"/g,'&quot;'); }
+function openDetail(code){ currentId=code; view='detail'; detailTab='flow'; render(); }
+
+function openModal(title, body, onOk){
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalBody').innerHTML = body;
+  document.getElementById('mask').classList.add('show');
+  document.getElementById('modal').classList.add('show');
+  document.getElementById('modalOk').onclick = onOk;
+}
+function closeModal(){
+  document.getElementById('mask').classList.remove('show');
+  document.getElementById('modal').classList.remove('show');
+}
+function fieldNum(id){ const v = parseFloat(document.getElementById(id).value); return isNaN(v) ? null : v; }
+function setErr(msg){ document.getElementById('formErr').textContent = msg || ''; }
+
+function openCreate(){
+  const opts = registryPool.map(o=>`<option value="${o.code}">${o.code} ${o.name}</option>`).join('');
+  openModal('从注册对象新建', `
+    <div class="form-row"><label><i>*</i>注册对象</label><div class="ctrl"><select class="field" id="obj" style="width:100%">${opts}</select>
+      <div class="help">同一注册对象只允许一条台账。已有台账时不能再建。</div></div></div>
+    <div class="form-row"><label><i>*</i>产出量</label><div class="ctrl"><input class="field" id="outQty" style="width:160px" placeholder="数量">
+      <select class="field" id="outUnit"><option>g</option><option>mg</option><option>支</option><option>瓶</option></select></div></div>
+    <div class="err" id="formErr"></div>`, submitCreate);
+}
+function submitCreate(){
+  const code = document.getElementById('obj').value;
+  const obj = registryPool.find(o=>o.code===code);
+  const n = fieldNum('outQty');
+  const unit = document.getElementById('outUnit').value;
+  if(find(code)){ setErr(`已有台账 ${code}，请前往查看`); return; }
+  if(n===null || n<=0){ setErr('请填写大于 0 的产出量'); return; }
+  samples.unshift({
+    code, name:obj.name, source:'注册对象', ref:'手工创建', owner:ME, project:'DL34-012', unit,
+    output:n, unstocked:n, retained:0, inbound:0, inventory:0, destroyed:false,
+    containers:[], requests:[], flows:[{time:now(), type:'登记', qty:qty(n,unit), before:'—', after:qty(n,unit), to:'手工创建'}]
+  });
+  closeModal();
+  toast('已生成样品台账 '+code, true);
+  openDetail(code);
+}
+
+function openAction(kind){
+  const s = find(currentId);
+  const a = avail(s);
+  if(kind==='req') return openReq(s, a);
+  const map = {
+    in: ['入库', `本次入库量不能超过可用量 ${qty(a,s.unit)}。入库后写容器，未入库量减少，物料库存量增加。`, 'inQty', a, submitIn],
+    keep: ['留样', `留样量从可用量里冻住，未入库量不变。当前可用量 ${qty(a,s.unit)}。`, 'keepQty', a, submitKeep],
+    dropKeep: ['销毁留样', `只减少留样量和未入库量，不能改回可用量。当前留样量 ${qty(s.retained,s.unit)}。`, 'dkQty', s.retained, submitDropKeep],
+    drop: ['销毁', `只销毁尚未留样的可用量 ${qty(a,s.unit)}。未入库量归零后状态变为已销毁，不看物料库存还剩多少。`, 'dropQty', a, submitDrop]
+  };
+  const [title, help, id, max, fn] = map[kind];
+  let extra = '';
+  if(kind==='in'){
+    extra = `
+      <div class="form-row"><label><i>*</i>容器编号</label><div class="ctrl"><input class="field" id="boxCode" style="width:220px" placeholder="如 C-新编号"></div></div>
+      <div class="form-row"><label><i>*</i>仓库</label><div class="ctrl"><select class="field" id="wh"><option>产物库 A</option><option>冷库</option><option>细胞库</option><option>室温柜 C</option></select></div></div>`;
+  }
+  openModal(title, `
+    <div class="form-row"><label>样品</label><div class="ctrl" style="line-height:32px;">${s.code} ${s.name}</div></div>
+    <div class="form-row"><label><i>*</i>数量</label><div class="ctrl"><input class="field" id="${id}" style="width:160px" placeholder="≤ ${max}"> <span>${s.unit}</span>
+      <div class="help">${help}</div></div></div>
+    ${extra}
+    <div class="err" id="formErr"></div>`, fn);
+}
+function readQty(id, max, label){
+  const n = fieldNum(id);
+  if(n===null || n<=0){ setErr('请填写大于 0 的'+label); return null; }
+  if(n>max){ setErr(label+'不能超过 '+max); return null; }
+  return n;
+}
+function submitIn(){
+  const s = find(currentId);
+  const n = readQty('inQty', avail(s), '入库量');
+  if(n===null) return;
+  const box = document.getElementById('boxCode').value.trim();
+  if(!box){ setErr('请填写容器编号'); return; }
+  const before = s.unstocked;
+  s.unstocked = round(s.unstocked - n);
+  s.inbound = round(s.inbound + n);
+  s.inventory = round(s.inventory + n);
+  s.containers.push({code:box, warehouse:document.getElementById('wh').value, qty:n, whole:false});
+  pushFlow(s, '入库', n, before, s.unstocked, box);
+  closeModal(); toast('已入库 '+qty(n,s.unit), true); render();
+}
+function submitKeep(){
+  const s = find(currentId);
+  const n = readQty('keepQty', avail(s), '留样量');
+  if(n===null) return;
+  const before = s.unstocked;
+  s.retained = round(s.retained + n);
+  pushFlow(s, '留样', n, before, s.unstocked, '—');
+  closeModal(); toast('已留样 '+qty(n,s.unit), true); render();
+}
+function submitDropKeep(){
+  const s = find(currentId);
+  const n = readQty('dkQty', s.retained, '销毁留样');
+  if(n===null) return;
+  const before = s.unstocked;
+  s.retained = round(s.retained - n);
+  s.unstocked = round(s.unstocked - n);
+  if(s.unstocked===0) s.destroyed = true;
+  pushFlow(s, '销毁留样', n, before, s.unstocked, '—');
+  closeModal(); toast('已销毁留样 '+qty(n,s.unit), true); render();
+}
+function submitDrop(){
+  const s = find(currentId);
+  const n = readQty('dropQty', avail(s), '销毁数量');
+  if(n===null) return;
+  const before = s.unstocked;
+  s.unstocked = round(s.unstocked - n);
+  if(s.unstocked===0) s.destroyed = true;
+  pushFlow(s, '销毁', n, before, s.unstocked, '—');
+  closeModal(); toast(s.destroyed ? '未入库量已销毁，状态为已销毁' : '已销毁 '+qty(n,s.unit), true); render();
+}
+
+function openReq(s, a){
+  const boxes = s.containers.filter(c=>c.qty>0);
+  const ledgerOff = a<=0;
+  const boxRows = boxes.length ? boxes.map((c,i)=>`
+    <tr>
+      <td><input type="checkbox" class="useBox" data-i="${i}" ${c.whole?'checked':''} onchange="syncWhole(this)"></td>
+      <td>${c.code}</td><td>${c.warehouse}</td><td>${qty(c.qty, s.unit)}</td>
+      <td>${c.whole?'整体出库':'按量'}</td>
+      <td><input class="field boxQty" data-i="${i}" style="width:90px" ${c.whole?`value="${c.qty}" disabled`:''}></td>
+    </tr>`).join('') : '<tr><td colspan="6" style="color:#909399;">没有剩余量大于 0 的容器</td></tr>';
+  openModal('发起请验', `
+    <div class="form-row"><label>样品</label><div class="ctrl" style="line-height:32px;">${s.code} ${s.name}</div></div>
+    <div class="form-row"><label>未入库</label><div class="ctrl">
+      <input class="field" id="ledgerQty" style="width:160px" placeholder="使用量" ${ledgerOff?'disabled':''}> <span>${s.unit}</span>
+      <div class="help">${ledgerOff?'未入库可用量为 0，本通道不可用':`从可用量扣减，当前可用量 ${qty(a,s.unit)}`}</div>
+    </div></div>
+    <div class="form-row"><label>物料容器</label><div class="ctrl">
+      <div class="table-wrap" style="margin:0;"><table class="el-table"><thead><tr><th></th><th>容器</th><th>仓库</th><th>剩余</th><th>方式</th><th>使用量</th></tr></thead><tbody>${boxRows}</tbody></table></div>
+      <div class="help">两个通道至少填一项。容器用量不改变未入库量和入库量。</div>
+    </div></div>
+    <div class="err" id="formErr"></div>`, ()=>submitReq(s, a, boxes));
+}
+function syncWhole(cb){
+  const input = document.querySelector(`.boxQty[data-i="${cb.dataset.i}"]`);
+  if(input && input.disabled) return;
+}
+function submitReq(s, a, boxes){
+  let ledger = 0;
+  if(a>0){
+    const raw = document.getElementById('ledgerQty').value.trim();
+    if(raw){
+      ledger = parseFloat(raw);
+      if(isNaN(ledger) || ledger<=0){ setErr('未入库使用量须大于 0'); return; }
+      if(ledger>a){ setErr('未入库使用量不能超过可用量 '+a); return; }
+    }
+  }
+  const picked = [];
+  document.querySelectorAll('.useBox:checked').forEach(cb=>{
+    const i = +cb.dataset.i;
+    const c = boxes[i];
+    const input = document.querySelector(`.boxQty[data-i="${i}"]`);
+    const n = c.whole ? c.qty : parseFloat(input.value);
+    if(isNaN(n) || n<=0){ picked.push({err:'请填写容器 '+c.code+' 的使用量'}); return; }
+    if(n>c.qty){ picked.push({err:'容器 '+c.code+' 使用量不能超过剩余 '+c.qty}); return; }
+    picked.push({c, n});
+  });
+  const bad = picked.find(p=>p.err);
+  if(bad){ setErr(bad.err); return; }
+  if(!ledger && !picked.length){ setErr('未入库和物料容器至少填写一项'); return; }
+  const channels = [];
+  if(ledger){
+    const before = s.unstocked;
+    s.unstocked = round(s.unstocked - ledger);
+    pushFlow(s, '请验消耗', ledger, before, s.unstocked, '请验单');
+    channels.push('台账 '+qty(ledger, s.unit));
+  }
+  picked.forEach(p=>{
+    p.c.qty = round(p.c.qty - p.n);
+    s.inventory = round(s.inventory - p.n);
+    channels.push('物料·'+p.c.code+' '+qty(p.n, s.unit));
+    s.flows.unshift({time:now(), type:'请验消耗', qty:qty(p.n,s.unit), before:qty(s.unstocked,s.unit), after:qty(s.unstocked,s.unit), to:p.c.code});
+  });
+  seq += 1;
+  const no = 'QY-20260922-'+String(seq).padStart(3,'0');
+  s.requests.unshift({no, batch:'YPPH-20260922-'+String(seq).padStart(3,'0'), channel:channels.join(' + '), time:now()});
+  s.flows.forEach(f=>{ if(f.to==='请验单') f.to = no; });
+  closeModal();
+  toast('已生成请验单 '+no+'，进入样品池', true);
+  detailTab = 'req';
+  render();
+}
+render();
+</script>
+</body>
+</html>
